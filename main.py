@@ -1,17 +1,15 @@
-from fastapi import FastAPI, HTTPException, Depends
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 import sqlite3
 import yfinance as yf
-from passlib.context import CryptContext
 from jose import jwt, JWTError
+import hashlib
 import os
 
 app = FastAPI()
 
-# CORS Ayarları
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -22,11 +20,19 @@ app.add_middleware(
 
 SECRET_KEY = "finans_gizli_anahtar_degistirin"
 ALGORITHM = "HS256"
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-# Veritabanı Kurulumu
+# Güvenli Şifre Hashleme Fonksiyonu (Dış kütüphane bağımlılığını kaldırır)
+def hash_password(password: str) -> str:
+    return hashlib.pbkdf2_hmac('sha256', password.encode('utf-8'), b'static_salt_finans', 100000).hex()
+
+def verify_password(password: str, hashed: str) -> bool:
+    return hash_password(password) == hashed
+
+# Veritabanı Yolunu Kalıcı Hale Getirme
+DB_PATH = "/opt/render/project/src/finans.db" if os.path.exists("/opt/render/project/src") else "finans.db"
+
 def init_db():
-    conn = sqlite3.connect("finans.db")
+    conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS users (
@@ -44,7 +50,6 @@ def init_db():
             buy_price REAL DEFAULT 0.0
         )
     """)
-    # Eski veritabanı varsa buy_price sütununu güvenle ekle
     try:
         cursor.execute("ALTER TABLE portfolio ADD COLUMN buy_price REAL DEFAULT 0.0")
     except sqlite3.OperationalError:
@@ -66,9 +71,12 @@ class Asset(BaseModel):
 
 @app.post("/register")
 def register(user: UserAuth):
-    conn = sqlite3.connect("finans.db")
+    if not user.username or not user.password:
+        raise HTTPException(status_code=400, detail="Kullanıcı adı ve şifre gereklidir.")
+        
+    conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
-    hashed_pwd = pwd_context.hash(user.password)
+    hashed_pwd = hash_password(user.password)
     try:
         cursor.execute("INSERT INTO users (username, password) VALUES (?, ?)", (user.username, hashed_pwd))
         conn.commit()
@@ -80,13 +88,13 @@ def register(user: UserAuth):
 
 @app.post("/login")
 def login(user: UserAuth):
-    conn = sqlite3.connect("finans.db")
+    conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute("SELECT id, password FROM users WHERE username = ?", (user.username,))
     db_user = cursor.fetchone()
     conn.close()
     
-    if not db_user or not pwd_context.verify(user.password, db_user[1]):
+    if not db_user or not verify_password(user.password, db_user[1]):
         raise HTTPException(status_code=400, detail="Hatalı kullanıcı adı veya şifre.")
     
     token = jwt.encode({"user_id": db_user[0], "username": user.username}, SECRET_KEY, algorithm=ALGORITHM)
@@ -102,7 +110,7 @@ def get_current_user(token: str):
 @app.get("/portfolio")
 def get_portfolio(token: str):
     user_id = get_current_user(token)
-    conn = sqlite3.connect("finans.db")
+    conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute("SELECT id, symbol, amount, buy_price FROM portfolio WHERE user_id = ?", (user_id,))
     items = cursor.fetchall()
@@ -113,7 +121,6 @@ def get_portfolio(token: str):
         asset_id, symbol, amount, buy_price = item
         current_price = buy_price
         
-        # Canlı Fiyat Çekme
         try:
             ticker = yf.Ticker(symbol)
             price = ticker.fast_info.last_price
@@ -143,7 +150,7 @@ def get_portfolio(token: str):
 @app.post("/portfolio/add")
 def add_asset(asset: Asset, token: str):
     user_id = get_current_user(token)
-    conn = sqlite3.connect("finans.db")
+    conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute("INSERT INTO portfolio (user_id, symbol, amount, buy_price) VALUES (?, ?, ?, ?)",
                    (user_id, asset.symbol.upper(), asset.amount, asset.buy_price))
@@ -154,7 +161,7 @@ def add_asset(asset: Asset, token: str):
 @app.delete("/portfolio/delete/{asset_id}")
 def delete_asset(asset_id: int, token: str):
     user_id = get_current_user(token)
-    conn = sqlite3.connect("finans.db")
+    conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute("DELETE FROM portfolio WHERE id = ? AND user_id = ?", (asset_id, user_id))
     conn.commit()

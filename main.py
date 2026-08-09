@@ -1,3 +1,4 @@
+import os
 from fastapi import FastAPI, HTTPException, Depends, Header
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
@@ -112,7 +113,9 @@ class AssetAdd(BaseModel):
 
 @app.get("/")
 def home():
-    return FileResponse("index.html")
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    html_path = os.path.join(base_dir, "index.html")
+    return FileResponse(html_path)
 # 1. KAYIT
 @app.post("/register")
 def register(user: UserAuth):

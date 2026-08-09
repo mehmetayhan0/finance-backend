@@ -3,211 +3,223 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Finans Asistanım</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <title>Finans Asistanım - Portföy & Kâr/Zarar</title>
+    <style>
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #0f172a; color: #f8fafc; margin: 0; padding: 20px; }
+        .container { max-width: 900px; margin: 0 auto; }
+        .card { background: #1e293b; padding: 20px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        h2 { margin-top: 0; color: #38bdf8; }
+        input, button { padding: 10px 14px; margin: 5px 0; border-radius: 6px; border: 1px solid #334155; background: #0f172a; color: white; width: 100%; }
+        button { background: #0284c7; cursor: pointer; border: none; font-weight: bold; }
+        button:hover { background: #0369a1; }
+        .form-group { display: flex; gap: 10px; flex-wrap: wrap; }
+        .form-group input { flex: 1; min-width: 140px; }
+        .form-group button { flex: 1; min-width: 120px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { text-align: left; padding: 12px; border-bottom: 1px solid #334155; }
+        th { color: #94a3b8; }
+        .profit { color: #4ade80; font-weight: bold; }
+        .loss { color: #f87171; font-weight: bold; }
+        .btn-delete { background: #ef4444; width: auto; padding: 6px 12px; font-size: 12px; }
+        .btn-delete:hover { background: #dc2626; }
+        .hidden { display: none; }
+        .summary-box { display: flex; justify-content: space-between; background: #0f172a; padding: 15px; border-radius: 8px; margin-bottom: 15px; }
+        .summary-item { text-align: center; }
+        .summary-item label { font-size: 12px; color: #94a3b8; display: block; }
+        .summary-item span { font-size: 18px; font-weight: bold; }
+    </style>
 </head>
-<body class="bg-gray-950 text-gray-100 min-h-screen flex flex-col items-center p-4">
+<body>
 
-    <!-- MOBİL KONTEYNER -->
-    <div class="w-full max-w-md space-y-5">
-        
-        <!-- ÜST BAŞLIK -->
-        <header class="flex justify-between items-center py-2 border-b border-gray-800">
-            <h1 class="text-xl font-bold text-emerald-400 flex items-center gap-2">
-                <i class="fa-solid font-bold text-2xl">⚡</i> Finans Asistanım
-            </h1>
-            <button id="logoutBtn" onclick="logout()" class="hidden text-xs bg-red-500/20 hover:bg-red-500/40 text-red-400 px-3 py-1.5 rounded-lg border border-red-500/30">
-                Çıkış Yap
-            </button>
-        </header>
-
-        <!-- GİRİŞ / KAYIT EKRANI -->
-        <div id="authScreen" class="bg-gray-900 border border-gray-800 rounded-2xl p-6 shadow-xl space-y-4">
-            <h2 id="authTitle" class="text-lg font-semibold text-gray-200 text-center">Hesabınıza Giriş Yapın</h2>
-            <div class="space-y-3">
-                <input id="username" type="text" placeholder="Kullanıcı Adı" class="w-full bg-gray-950 border border-gray-800 rounded-xl px-4 py-3 focus:outline-none focus:border-emerald-500 text-sm">
-                <input id="password" type="password" placeholder="Şifre" class="w-full bg-gray-950 border border-gray-800 rounded-xl px-4 py-3 focus:outline-none focus:border-emerald-500 text-sm">
-                <button onclick="handleAuth()" id="authSubmitBtn" class="w-full bg-emerald-500 hover:bg-emerald-600 font-semibold text-gray-950 py-3 rounded-xl text-sm transition">
-                    Giriş Yap
-                </button>
-            </div>
-            <div class="text-center text-xs text-gray-400 pt-2">
-                <span id="authToggleText">Hesabın yok mu?</span>
-                <button onclick="toggleAuthMode()" id="authToggleBtn" class="text-emerald-400 font-medium underline ml-1">Kayıt Ol</button>
-            </div>
-        </div>
-
-        <!-- PORTFÖY DÖKÜMÜ (GİRİŞ YAPILINCA AÇILIR) -->
-        <div id="portfolioScreen" class="hidden space-y-5">
-            
-            <!-- TOPLAM BAKİYE KARTI -->
-            <div class="bg-gradient-to-br from-emerald-900/40 to-gray-900 border border-emerald-500/30 rounded-2xl p-5 shadow-lg">
-                <p class="text-xs text-emerald-400 font-medium">Toplam Portföy Değeri</p>
-                <p id="totalPortfolioTL" class="text-3xl font-extrabold text-white mt-1">₺0.00</p>
-            </div>
-
-            <!-- VARLIK / HİSSE EKLEME FORMU -->
-            <div class="bg-gray-900 border border-gray-800 rounded-2xl p-4 space-y-3">
-                <p class="text-xs font-semibold text-gray-400">Yeni Varlık / Hisse Ekle</p>
-                <div class="flex gap-2">
-                    <input id="assetSymbol" type="text" placeholder="Sembol (THYAO, ALTIN, EURO)" class="w-2/3 bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-emerald-500 uppercase">
-                    <input id="assetAmount" type="number" placeholder="Miktar (Lot/Gram)" class="w-1/3 bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-emerald-500">
-                </div>
-                <button onclick="addAsset()" class="w-full bg-emerald-500 hover:bg-emerald-600 font-semibold text-gray-950 py-2.5 rounded-xl text-xs transition">
-                    Portföye Ekle
-                </button>
-            </div>
-
-            <!-- LİSTE -->
-            <div class="space-y-2">
-                <p class="text-xs font-semibold text-gray-400 px-1">Varlıklarım</p>
-                <div id="assetList" class="space-y-2">
-                    <!-- Dinamik içerik JavaScript ile dolacak -->
-                </div>
-            </div>
-
-        </div>
-
+<div class="container">
+    <!-- Giriş / Kayıt Formu -->
+    <div id="auth-section" class="card">
+        <h2 id="form-title">Giriş Yap</h2>
+        <input type="text" id="username" placeholder="Kullanıcı Adı">
+        <input type="password" id="password" placeholder="Şifre">
+        <button onclick="handleAuth()">Giriş Yap</button>
+        <p style="text-align: center; font-size: 14px; margin-top: 10px;">
+            <a href="#" id="toggle-auth" onclick="toggleAuthMode()" style="color: #38bdf8; text-decoration: none;">Hesabın yok mu? Kayıt Ol</a>
+        </p>
     </div>
 
-    <!-- JAVASCRIPT MOTORU -->
-    <script>
-        let isLoginMode = true;
-        const API_URL = window.location.origin;
+    <!-- Portföy Paneli -->
+    <div id="portfolio-section" class="card hidden">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <h2>Portföyüm & Kâr/Zarar Durumu</h2>
+            <button onclick="logout()" style="width: auto; background: #475569;">Çıkış Yap</button>
+        </div>
 
-        // Sayfa açıldığında token kontrolü
-        window.onload = () => {
-            const token = localStorage.getItem("token");
-            if (token) {
+        <div class="summary-box">
+            <div class="summary-item">
+                <label>Toplam Maliyet</label>
+                <span id="total-cost-val">0.00 ₺</span>
+            </div>
+            <div class="summary-item">
+                <label>Güncel Portföy Değeri</label>
+                <span id="total-value-val">0.00 ₺</span>
+            </div>
+            <div class="summary-item">
+                <label>Toplam Kâr / Zarar</label>
+                <span id="total-pl-val">0.00 ₺</span>
+            </div>
+        </div>
+
+        <h3>Yeni Varlık Ekle</h3>
+        <div class="form-group">
+            <input type="text" id="symbol" placeholder="Sembol (Örn: THYAO.IS, USDTRY=X, AAPL)">
+            <input type="number" id="amount" step="any" placeholder="Adet">
+            <input type="number" id="buy-price" step="any" placeholder="Ort. Alış Fiyatı (₺)">
+            <button onclick="addAsset()">Ekle</button>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Sembol</th>
+                    <th>Adet</th>
+                    <th>Ort. Alış</th>
+                    <th>Anlık Fiyat</th>
+                    <th>Güncel Değer</th>
+                    <th>Kâr / Zarar</th>
+                    <th>İşlem</th>
+                </tr>
+            </thead>
+            <tbody id="portfolio-list">
+                <!-- Veriler JS ile doldurulacak -->
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    let isLogin = true;
+    let token = localStorage.getItem("access_token");
+
+    if (token) {
+        showPortfolio();
+    }
+
+    function toggleAuthMode() {
+        isLogin = !isLogin;
+        document.getElementById("form-title").innerText = isLogin ? "Giriş Yap" : "Kayıt Ol";
+        document.getElementById("toggle-auth").innerText = isLogin ? "Hesabın yok mu? Kayıt Ol" : "Zaten hesabın var mı? Giriş Yap";
+    }
+
+    async function handleAuth() {
+        const username = document.getElementById("username").value;
+        const password = document.getElementById("password").value;
+        const endpoint = isLogin ? "/login" : "/register";
+
+        const response = await fetch(endpoint, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username, password })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            if (isLogin) {
+                localStorage.setItem("access_token", data.access_token);
+                token = data.access_token;
                 showPortfolio();
+            } else {
+                alert("Kayıt başarılı! Şimdi giriş yapabilirsiniz.");
+                toggleAuthMode();
             }
-        };
+        } else {
+            alert(data.detail || "Bir hata oluştu.");
+        }
+    }
 
-        function toggleAuthMode() {
-            isLoginMode = !isLoginMode;
-            document.getElementById("authTitle").innerText = isLoginMode ? "Hesabınıza Giriş Yapın" : "Yeni Hesap Oluşturun";
-            document.getElementById("authSubmitBtn").innerText = isLoginMode ? "Giriş Yap" : "Kayıt Ol";
-            document.getElementById("authToggleText").innerText = isLoginMode ? "Hesabın yok mu?" : "Zaten hesabın var mı?";
-            document.getElementById("authToggleBtn").innerText = isLoginMode ? "Kayıt Ol" : "Giriş Yap";
+    function logout() {
+        localStorage.removeItem("access_token");
+        token = null;
+        document.getElementById("portfolio-section").classList.add("hidden");
+        document.getElementById("auth-section").classList.remove("hidden");
+    }
+
+    function showPortfolio() {
+        document.getElementById("auth-section").classList.add("hidden");
+        document.getElementById("portfolio-section").classList.remove("hidden");
+        loadPortfolio();
+    }
+
+    async function loadPortfolio() {
+        const response = await fetch(`/portfolio?token=${token}`);
+        if (!response.ok) {
+            logout();
+            return;
         }
 
-        async function handleAuth() {
-            const username = document.getElementById("username").value;
-            const password = document.getElementById("password").value;
-            const endpoint = isLoginMode ? "/login" : "/register";
+        const data = await response.json();
+        const list = document.getElementById("portfolio-list");
+        list.innerHTML = "";
 
-            try {
-                const res = await fetch(API_URL + endpoint, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ username, password })
-                });
-                const data = await res.json();
+        let grandTotalCost = 0;
+        let grandTotalValue = 0;
 
-                if (!res.ok) throw new Error(data.detail || "İşlem başarısız!");
+        data.forEach(item => {
+            grandTotalCost += item.total_cost;
+            grandTotalValue += item.current_value;
 
-                if (isLoginMode) {
-                    localStorage.setItem("token", data.access_token);
-                    showPortfolio();
-                } else {
-                    alert("Kayıt başarılı! Şimdi giriş yapabilirsiniz.");
-                    toggleAuthMode();
-                }
-            } catch (err) {
-                alert(err.message);
-            }
+            const isProfitable = item.profit_loss >= 0;
+            const plClass = isProfitable ? "profit" : "loss";
+            const plSign = isProfitable ? "+" : "";
+
+            list.innerHTML += `
+                <tr>
+                    <td><b>${item.symbol}</b></td>
+                    <td>${item.amount}</td>
+                    <td>${item.buy_price.toFixed(2)} ₺</td>
+                    <td>${item.current_price.toFixed(2)} ₺</td>
+                    <td>${item.current_value.toFixed(2)} ₺</td>
+                    <td class="${plClass}">${plSign}${item.profit_loss.toFixed(2)} ₺ (%${item.profit_loss_percent})</td>
+                    <td><button class="btn-delete" onclick="deleteAsset(${item.id})">Sil</button></td>
+                </tr>
+            `;
+        });
+
+        const totalPL = grandTotalValue - grandTotalCost;
+        const totalPLClass = totalPL >= 0 ? "profit" : "loss";
+
+        document.getElementById("total-cost-val").innerText = grandTotalCost.toFixed(2) + " ₺";
+        document.getElementById("total-value-val").innerText = grandTotalValue.toFixed(2) + " ₺";
+        
+        const totalPLSpan = document.getElementById("total-pl-val");
+        totalPLSpan.innerText = (totalPL >= 0 ? "+" : "") + totalPL.toFixed(2) + " ₺";
+        totalPLSpan.className = totalPLClass;
+    }
+
+    async function addAsset() {
+        const symbol = document.getElementById("symbol").value;
+        const amount = parseFloat(document.getElementById("amount").value);
+        const buy_price = parseFloat(document.getElementById("buy-price").value) || 0.0;
+
+        if (!symbol || isNaN(amount)) {
+            alert("Lütfen geçerli bir sembol ve adet girin.");
+            return;
         }
 
-        function showPortfolio() {
-            document.getElementById("authScreen").classList.add("hidden");
-            document.getElementById("portfolioScreen").classList.remove("hidden");
-            document.getElementById("logoutBtn").classList.remove("hidden");
-            loadPortfolioData();
-        }
+        await fetch(`/portfolio/add?token=${token}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ symbol, amount, buy_price })
+        });
 
-        async function loadPortfolioData() {
-            const token = localStorage.getItem("token");
-            try {
-                const res = await fetch(API_URL + "/portfolio/my", {
-                    headers: { "Authorization": "Bearer " + token }
-                });
-                const data = await res.json();
+        document.getElementById("symbol").value = "";
+        document.getElementById("amount").value = "";
+        document.getElementById("buy-price").value = "";
+        loadPortfolio();
+    }
 
-                if (!res.ok) throw new Error("Portföy yüklenemedi.");
+    async function deleteAsset(id) {
+        await fetch(`/portfolio/delete/${id}?token=${token}`, { method: "DELETE" });
+        loadPortfolio();
+    }
+</script>
 
-                document.getElementById("totalPortfolioTL").innerText = "₺" + data.portfolio_total_tl.toLocaleString('tr-TR', {minimumFractionDigits: 2});
-                
-                const listEl = document.getElementById("assetList");
-                listEl.innerHTML = "";
-
-                if (data.items.length === 0) {
-                    listEl.innerHTML = `<p class="text-xs text-gray-500 text-center py-4">Henüz eklenmiş bir varlık yok.</p>`;
-                    return;
-                }
-
-                data.items.forEach(item => {
-                    listEl.innerHTML += `
-                        <div class="bg-gray-900 border border-gray-800/80 rounded-xl p-3.5 flex justify-between items-center">
-                            <div>
-                                <p class="font-bold text-sm text-gray-100">${item.symbol}</p>
-                                <p class="text-xs text-gray-400">${item.amount} Adet/Gram • Birim: ₺${item.unit_price_tl}</p>
-                            </div>
-                            <div class="flex items-center gap-3">
-                                <p class="font-semibold text-sm text-emerald-400">₺${item.total_value_tl.toLocaleString('tr-TR')}</p>
-                                <button onclick="deleteAsset(${item.id})" class="text-gray-500 hover:text-red-400 text-xs p-1">✕</button>
-                            </div>
-                        </div>
-                    `;
-                });
-            } catch (err) {
-                console.error(err);
-            }
-        }
-
-        async function addAsset() {
-            const symbol = document.getElementById("assetSymbol").value;
-            const amount = parseFloat(document.getElementById("assetAmount").value);
-            const token = localStorage.getItem("token");
-
-            if (!symbol || !amount) return alert("Lütfen sembol ve miktar girin!");
-
-            try {
-                const res = await fetch(API_URL + "/portfolio/add", {
-                    method: "POST",
-                    headers: { 
-                        "Content-Type": "application/json",
-                        "Authorization": "Bearer " + token 
-                    },
-                    body: JSON.stringify({ symbol, amount })
-                });
-                if (res.ok) {
-                    document.getElementById("assetSymbol").value = "";
-                    document.getElementById("assetAmount").value = "";
-                    loadPortfolioData();
-                }
-            } catch (err) {
-                alert("Ekleme hatası!");
-            }
-        }
-
-        async function deleteAsset(id) {
-            const token = localStorage.getItem("token");
-            try {
-                await fetch(`${API_URL}/portfolio/delete/${id}`, {
-                    method: "DELETE",
-                    headers: { "Authorization": "Bearer " + token }
-                });
-                loadPortfolioData();
-            } catch (err) {
-                alert("Silme hatası!");
-            }
-        }
-
-        function logout() {
-            localStorage.removeItem("token");
-            location.reload();
-        }
-    </script>
 </body>
 </html>

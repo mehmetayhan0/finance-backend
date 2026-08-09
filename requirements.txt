@@ -3,3 +3,4 @@ uvicorn
 yfinance
 pyjwt
 passlib[bcrypt]
+python-jose[cryptography]

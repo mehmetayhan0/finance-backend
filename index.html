@@ -95,11 +95,46 @@
             color: #f8fafc;
         }
 
+        /* UYGULAMA ÜST BAŞLIĞI VE ÇIKIŞ BUTONU */
+        .header-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 950px;
+            margin: 15px auto 5px auto;
+            padding: 0 16px;
+        }
+
+        .header-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #6366f1;
+        }
+
+        .btn-logout {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-logout:hover {
+            background: #dc2626;
+        }
+
         /* PORTFÖY KONTEYNERİ */
         .app-container {
             width: 100%;
             max-width: 950px;
-            margin: 20px auto;
+            margin: 10px auto;
             padding: 0 16px;
         }
 
@@ -237,6 +272,12 @@
         </div>
     </div>
 
+    <!-- üst BAŞLIK VE ÇIKIŞ YAP BUTONU -->
+    <div class="header-bar">
+        <div class="header-title">Finansım 📈</div>
+        <button class="btn-logout" onclick="logoutUser()">🚪 Çıkış Yap</button>
+    </div>
+
     <!-- 3. PORTFÖY YÖNETİM PANELİ -->
     <div class="app-container">
         
@@ -310,10 +351,9 @@
         let livePrices = {};
         let myPortfolio = [];
 
-        // GÜÇLENDİRİLMİŞ CANLI VERİ ÇEKME MOTORU
+        // CANLI VERİ ÇEKME MOTORU
         async function fetchMarketData() {
             try {
-                // 1. Döviz Verileri (USD & EUR)
                 const fxRes = await fetch('https://open.er-api.com/v6/latest/USD');
                 const fxData = await fxRes.json();
                 if (fxData && fxData.rates && fxData.rates.TRY) {
@@ -323,7 +363,6 @@
                     livePrices['USD'] = usdTry;
                     livePrices['EUR'] = eurTry;
 
-                    // Altın & Gümüş Gram Fiyatı
                     try {
                         const goldRes = await fetch('https://api.gold-api.com/price/XAU');
                         const goldData = await goldRes.json();
@@ -348,7 +387,6 @@
                 console.log("Döviz servisine ulaşılamadı.");
             }
 
-            // 2. Kripto (Binance BTC)
             try {
                 const btcRes = await fetch('https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT');
                 const btcData = await btcRes.json();
@@ -357,7 +395,6 @@
                 }
             } catch(e){}
 
-            // 3. BIST Hisse Senetleri Canlı Verisi (Güçlendirilmiş Çift Proxy)
             const uniqueCodes = [...new Set(myPortfolio.map(item => item.code.toUpperCase().trim()))];
             
             for (let code of uniqueCodes) {
@@ -366,7 +403,6 @@
                 let fetched = false;
                 const symbol = code.endsWith('.IS') ? code : `${code}.IS`;
 
-                // 1. Yöntem: Corsproxy Servisi
                 try {
                     const targetUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?interval=1m&range=1d`;
                     const res = await fetch(`https://corsproxy.io/?${encodeURIComponent(targetUrl)}`);
@@ -382,7 +418,6 @@
                     }
                 } catch(e) {}
 
-                // 2. Yöntem: Alternatif AllOrigins Proxy (Eğer ilk servis takılırsa)
                 if (!fetched) {
                     try {
                         const targetUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?interval=1m&range=1d`;
@@ -448,7 +483,6 @@
 
         function getAssetLivePrice(code, cost) {
             const cleanCode = code.toUpperCase().trim();
-            // Eğer canlı fiyat çekildiyse onu kullan, çekilemediyse geçici olarak alış fiyatını baz al
             if (livePrices[cleanCode] && livePrices[cleanCode] > 0) {
                 return livePrices[cleanCode];
             }
@@ -465,6 +499,16 @@
         function savePortfolioToStorage() {
             localStorage.setItem("finansim_my_portfolio", JSON.stringify(myPortfolio));
             updatePortfolioUI();
+        }
+
+        // ÇIKIŞ YAP FONKSİYONU
+        function logoutUser() {
+            if (confirm("Çıkış yapmak istediğinize emin misiniz? (Portföy verileriniz sıfırlanacaktır.)")) {
+                localStorage.removeItem("finansim_my_portfolio");
+                myPortfolio = [];
+                updatePortfolioUI();
+                alert("Başarıyla çıkış yapıldı!");
+            }
         }
 
         // FORM GÖNDERİMİ

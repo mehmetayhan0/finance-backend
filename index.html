@@ -3,183 +3,364 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mehmet'in Finans Asistanı</title>
-    
-    <!-- PWABuilder İçin Manifest Bağlantısı (Kritik Ekisik Buydu) -->
+    <title>Finansım - Kişisel Finans Asistanı</title>
     <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#0f172a">
-    
+    <meta name="theme-color" content="#4f46e5">
     <style>
+        /* Genel Tasarım & Sıfırlamalar */
         * {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
         body {
-            background-color: #0f172a;
-            color: #f8fafc;
-            min-height: 100vh;
+            background-color: #f3f4f6;
+            color: #1f2937;
             display: flex;
             flex-direction: column;
+            min-height: 100vh;
         }
 
-        /* Üst Menü */
-        header {
-            background-color: #1e293b;
-            padding: 16px 24px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid #334155;
-        }
-
-        .brand {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-weight: 700;
-            font-size: 18px;
-            color: #38bdf8;
-        }
-
-        .btn {
-            color: #ffffff;
-            border: none;
-            padding: 10px 18px;
-            font-size: 14px;
-            font-weight: 600;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            text-decoration: none;
-        }
-
-        .btn-download {
-            background: linear-gradient(135deg, #0284c7, #2563eb);
-        }
-
-        .btn-update {
-            background: linear-gradient(135deg, #10b981, #059669);
-        }
-
-        .btn:hover {
-            opacity: 0.9;
-            transform: translateY(-1px);
-        }
-
-        /* Ana İçerik */
-        main {
-            flex: 1;
-            padding: 24px;
-            max-width: 800px;
-            margin: 0 auto;
+        /* Konteyner Düzeni */
+        .container {
             width: 100%;
+            max-width: 440px;
+            margin: auto;
+            padding: 20px;
         }
 
+        /* Kart Yapısı */
         .card {
-            background-color: #1e293b;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 20px;
-            border: 1px solid #334155;
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+            padding: 28px;
+            text-align: center;
         }
 
         .card h2 {
-            font-size: 16px;
-            color: #94a3b8;
-            margin-bottom: 8px;
-        }
-
-        .card .amount {
-            font-size: 28px;
-            font-weight: 700;
-            color: #f8fafc;
-        }
-
-        .status-banner {
-            background-color: rgba(56, 189, 248, 0.1);
-            border: 1px solid #38bdf8;
-            color: #38bdf8;
-            padding: 12px;
-            border-radius: 8px;
             margin-bottom: 20px;
+            color: #111827;
+            font-size: 26px;
+        }
+
+        /* Tab Butonları (Giriş / Kayıt) */
+        .tab-buttons {
+            display: flex;
+            margin-bottom: 24px;
+            border-bottom: 2px solid #e5e7eb;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 12px;
+            background: none;
+            border: none;
+            font-weight: 600;
+            font-size: 15px;
+            color: #6b7280;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn.active {
+            color: #4f46e5;
+            border-bottom: 3px solid #4f46e5;
+        }
+
+        /* Form Grupları */
+        .form-group {
+            margin-bottom: 16px;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 6px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
             font-size: 14px;
-            text-align: center;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .form-group input:focus {
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        /* Buton Stilleri */
+        .btn {
+            width: 100%;
+            padding: 12px;
+            background-color: #4f46e5;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            margin-top: 8px;
+        }
+
+        .btn:hover {
+            background-color: #4338ca;
+        }
+
+        .btn-secondary {
+            background-color: #10b981;
+        }
+
+        .btn-secondary:hover {
+            background-color: #059669;
+        }
+
+        .btn-danger {
+            background-color: #ef4444;
+        }
+
+        .btn-danger:hover {
+            background-color: #dc2626;
+        }
+
+        .action-banner {
+            margin-bottom: 20px;
+        }
+
+        /* Uygulama Ana Ekranı (Giriş Yapılınca Açılan Kısım) */
+        #app-section {
+            display: none;
+            width: 100%;
+            max-width: 600px;
+            margin: auto;
+            padding: 20px;
+        }
+
+        .app-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            background: white;
+            padding: 16px 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+
+        .app-header h3 {
+            color: #4f46e5;
+            font-size: 20px;
+        }
+
+        .logout-btn {
+            padding: 8px 14px;
+            font-size: 13px;
+            width: auto;
+        }
+
+        .dashboard-card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            background: #e0e7ff;
+            color: #3730a3;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 12px;
         }
     </style>
 </head>
 <body>
 
-    <header>
-        <div class="brand">
-            <span>📊</span> Mehmet'in Finans Asistanı
-        </div>
-        
-        <!-- Dinamik Buton Alanı (JS Tarafından Yönetilir) -->
-        <div id="actionButtonContainer"></div>
-    </header>
-
-    <main>
-        <div id="statusNotice" class="status-banner">
-            İçerik yükleniyor...
-        </div>
-
+    <!-- KULLANICI GİRİŞ VE KAYIT EKRANI -->
+    <div id="auth-section" class="container">
         <div class="card">
-            <h2>Toplam Varlık</h2>
-            <div class="amount">₺0,00</div>
+            <h2>Finansım</h2>
+
+            <!-- Web Sitemizden Girenlere APK İndirme Butonu -->
+            <div class="action-banner">
+                <a href="/download-apk" style="text-decoration: none;">
+                    <button class="btn btn-secondary">📲 APK Uygulamasını İndir</button>
+                </a>
+            </div>
+
+            <!-- Tab Butonları -->
+            <div class="tab-buttons">
+                <button class="tab-btn active" onclick="switchTab('login')">Giriş Yap</button>
+                <button class="tab-btn" onclick="switchTab('register')">Kayıt Ol</button>
+            </div>
+
+            <!-- Giriş Formu (Kullanıcı Adı & Şifre) -->
+            <form id="login-form" onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label for="login-username">Kullanıcı Adı</label>
+                    <input type="text" id="login-username" placeholder="Kullanıcı adınızı girin" required>
+                </div>
+                <div class="form-group">
+                    <label for="login-password">Şifre</label>
+                    <input type="password" id="login-password" placeholder="Şifrenizi girin" required>
+                </div>
+                <button type="submit" class="btn">Giriş Yap</button>
+            </form>
+
+            <!-- Kayıt Ol Formu (Kullanıcı Adı, E-posta & Şifre) -->
+            <form id="register-form" onsubmit="handleRegister(event)" style="display: none;">
+                <div class="form-group">
+                    <label for="reg-username">Kullanıcı Adı</label>
+                    <input type="text" id="reg-username" placeholder="Kullanıcı adı belirleyin" required>
+                </div>
+                <div class="form-group">
+                    <label for="reg-email">E-posta Adresi</label>
+                    <input type="email" id="reg-email" placeholder="ornek@email.com" required>
+                </div>
+                <div class="form-group">
+                    <label for="reg-password">Şifre</label>
+                    <input type="password" id="reg-password" placeholder="Şifre belirleyin" required>
+                </div>
+                <button type="submit" class="btn">Kayıt Ol</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MOBİL VE WEB UYGULAMA ANA PANELSİ (Giriş Yapılınca Çalışır) -->
+    <div id="app-section">
+        <div class="app-header">
+            <div>
+                <h3>Finansım</h3>
+                <small id="user-display-name">Hoş geldiniz</small>
+            </div>
+            <button class="btn btn-danger logout-btn" onclick="manualLogout()">Çıkış Yap</button>
         </div>
 
-        <div class="card">
-            <h2>Aylık Gelir / Gider Özeti</h2>
-            <p style="color: #94a3b8; font-size: 14px; margin-top: 8px;">Finansal verileriniz senkronize ediliyor...</p>
+        <div class="dashboard-card">
+            <span class="status-badge">🛡️ 45 Saniye Otomatik Güvenlik Aktif</span>
+            <h4 style="margin-bottom: 8px;">Kişisel Gelir & Gider Takip Paneli</h4>
+            <p style="color: #4b5563; font-size: 14px; line-height: 1.5;">
+                Finans asistanınıza başarıyla giriş yaptınız. Ekrana veya klavyeye 45 saniye boyunca hiçbir dokunuş yapılmazsa oturumunuz güvenlik amacıyla otomatik olarak kapatılacaktır.
+            </p>
         </div>
-    </main>
+    </div>
 
     <script>
-        // Service Worker Kaydı (PWABuilder Tanıması İçin)
+        // PWA Servis Kaydı
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js').catch(err => console.log('SW Hata:', err));
+                navigator.serviceWorker.register('/sw.js')
+                    .then(reg => console.log('Service Worker Kayıtlı:', reg))
+                    .catch(err => console.log('Service Worker Hatası:', err));
             });
         }
 
-        // Kullanıcının Web'den mi yoksa Yüklü Uygulamadan mı girdiğini tespit et
-        const isAppMode = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true || navigator.userAgent.includes('FinansApp');
+        // Tab Değiştirme Fonksiyonu
+        function switchTab(tab) {
+            const loginForm = document.getElementById('login-form');
+            const registerForm = document.getElementById('register-form');
+            const buttons = document.querySelectorAll('.tab-btn');
 
-        const buttonContainer = document.getElementById('actionButtonContainer');
-        const statusNotice = document.getElementById('statusNotice');
-
-        if (isAppMode) {
-            // UYGULAMA İÇİNDEN GİRİLDİYSE: Güncelle Butonu Göster
-            statusNotice.innerHTML = "📱 **Uygulama Modundasınız.** Tüm güncellemeler anlık olarak senkronize edilir.";
-            
-            buttonContainer.innerHTML = `
-                <button class="btn btn-update" onclick="forceAppUpdate()">
-                    🔄 Güncellemeyi Denetle
-                </button>
-            `;
-        } else {
-            // TARAYICIDAN GİRİLDİYSE: Doğrudan APK İndir / Yükle Butonu Göster
-            statusNotice.innerHTML = "🌐 **Web Sürümündesiniz.** Dilerseniz uygulamayı telefonunuza APK olarak indirebilirsiniz.";
-            
-            const downloadUrl = "/download-apk?t=" + new Date().getTime();
-            
-            buttonContainer.innerHTML = `
-                <a href="${downloadUrl}" class="btn btn-download">
-                    📲 APK Uygulamasını İndir
-                </a>
-            `;
+            if (tab === 'login') {
+                loginForm.style.display = 'block';
+                registerForm.style.display = 'none';
+                buttons[0].classList.add('active');
+                buttons[1].classList.remove('active');
+            } else {
+                loginForm.style.display = 'none';
+                registerForm.style.display = 'block';
+                buttons[0].classList.remove('active');
+                buttons[1].classList.add('active');
+            }
         }
 
-        // Uygulama içi güncelleme kontrolü
-        function forceAppUpdate() {
-            window.location.reload(true);
-            alert("Uygulama en güncel sürüme yenilendi!");
+        // Giriş Yapma İşlemi
+        function handleLogin(e) {
+            e.preventDefault();
+            const username = document.getElementById('login-username').value;
+
+            // Oturum Açma Başarılı
+            sessionStorage.setItem("loggedInUser", username);
+            document.getElementById('user-display-name').innerText = "Kullanıcı: " + username;
+
+            document.getElementById('auth-section').style.display = 'none';
+            document.getElementById('app-section').style.display = 'block';
+
+            // 45 Saniyelik Hareketsizlik Zamanlayıcısını Başlat
+            startInactivityMonitoring();
+        }
+
+        // Kayıt Olma İşlemi
+        function handleRegister(e) {
+            e.preventDefault();
+            const username = document.getElementById('reg-username').value;
+            alert("Kayıt başarılı! Şimdi belirlediğiniz bilgilerle giriş yapabilirsiniz.");
+            switchTab('login');
+            document.getElementById('login-username').value = username;
+        }
+
+        // Manuel Çıkış Yapma
+        function manualLogout() {
+            stopInactivityMonitoring();
+            sessionStorage.removeItem("loggedInUser");
+            document.getElementById('app-section').style.display = 'none';
+            document.getElementById('auth-section').style.display = 'block';
+            document.getElementById('login-form').reset();
+            document.getElementById('register-form').reset();
+        }
+
+        // ==========================================
+        // 45 SANİYE OTOMATİK ÇIKIŞ GÜVENLİK SİSTEMİ
+        // ==========================================
+        let inactivityTimer;
+        const TIMEOUT_DURATION = 45000; // 45 Saniye (Milisaniye)
+        const activityEvents = ['mousemove', 'keydown', 'click', 'touchstart', 'scroll'];
+
+        function resetInactivityTimer() {
+            clearTimeout(inactivityTimer);
+            if (sessionStorage.getItem("loggedInUser")) {
+                inactivityTimer = setTimeout(autoLogout, TIMEOUT_DURATION);
+            }
+        }
+
+        function autoLogout() {
+            stopInactivityMonitoring();
+            sessionStorage.removeItem("loggedInUser");
+            
+            document.getElementById('app-section').style.display = 'none';
+            document.getElementById('auth-section').style.display = 'block';
+            document.getElementById('login-form').reset();
+
+            alert("Güvenliğiniz için 45 saniye boyunca hiçbir işlem yapılmadığından oturumunuz otomatik olarak kapatılmıştır.");
+        }
+
+        function startInactivityMonitoring() {
+            activityEvents.forEach(eventName => {
+                window.addEventListener(eventName, resetInactivityTimer, true);
+            });
+            resetInactivityTimer();
+        }
+
+        function stopInactivityMonitoring() {
+            activityEvents.forEach(eventName => {
+                window.removeEventListener(eventName, resetInactivityTimer, true);
+            });
+            clearTimeout(inactivityTimer);
         }
     </script>
 </body>

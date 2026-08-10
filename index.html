@@ -111,33 +111,38 @@
             color: #6366f1;
         }
 
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .username-tag {
+            font-size: 13px;
+            color: #94a3b8;
+            background: #0f172a;
+            padding: 6px 12px;
+            border-radius: 8px;
+            border: 1px solid #334155;
+        }
+
         .btn-logout {
             background: #ef4444;
             color: white;
             border: none;
-            padding: 8px 16px;
+            padding: 8px 14px;
             border-radius: 8px;
             cursor: pointer;
             font-size: 13px;
             font-weight: 600;
             transition: background 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 6px;
         }
 
         .btn-logout:hover {
             background: #dc2626;
         }
 
-        /* PORTFÖY KONTEYNERİ */
-        .app-container {
-            width: 100%;
-            max-width: 950px;
-            margin: 10px auto;
-            padding: 0 16px;
-        }
-
+        /* GENEL KART YAPISI */
         .card {
             background: #1e293b;
             border: 1px solid #334155;
@@ -147,22 +152,48 @@
             margin-bottom: 20px;
         }
 
-        /* GİRİŞ EKRANI BÖLÜMÜ */
-        .login-card {
-            max-width: 400px;
-            margin: 60px auto;
-            text-align: center;
+        /* GİRİŞ & KAYIT OL PANELİ */
+        .auth-container {
+            max-width: 420px;
+            margin: 40px auto;
         }
 
-        .login-card h3 {
-            margin-bottom: 8px;
-            color: #6366f1;
-        }
-
-        .login-card p {
-            font-size: 13px;
-            color: #94a3b8;
+        .auth-tabs {
+            display: flex;
             margin-bottom: 20px;
+            border-bottom: 1px solid #334155;
+        }
+
+        .auth-tab {
+            flex: 1;
+            padding: 12px;
+            text-align: center;
+            background: transparent;
+            border: none;
+            color: #94a3b8;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .auth-tab.active {
+            color: #6366f1;
+            border-bottom: 2px solid #6366f1;
+        }
+
+        .auth-form {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        /* PORTFÖY KONTEYNERİ */
+        .app-container {
+            width: 100%;
+            max-width: 950px;
+            margin: 10px auto;
+            padding: 0 16px;
         }
 
         .total-portfolio-card {
@@ -198,6 +229,14 @@
 
         .btn:hover {
             background-color: #059669;
+        }
+
+        .btn-primary {
+            background-color: #6366f1;
+        }
+
+        .btn-primary:hover {
+            background-color: #4f46e5;
         }
 
         .form-grid {
@@ -257,6 +296,20 @@
             margin-left: 6px;
             font-weight: bold;
         }
+
+        .auth-error {
+            color: #ef4444;
+            font-size: 12px;
+            text-align: center;
+            display: none;
+        }
+
+        .auth-success {
+            color: #22c55e;
+            font-size: 12px;
+            text-align: center;
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -290,21 +343,58 @@
         </div>
     </div>
 
-    <!-- ÜST BAŞLIK VE ÇIKIŞ YAP BUTONU -->
-    <div class="header-bar" id="header-bar">
+    <!-- ÜST BAŞLIK VE GİRİŞ BİLGİSİ -->
+    <div class="header-bar" id="header-bar" style="display: none;">
         <div class="header-title">Finansım 📈</div>
-        <button class="btn-logout" onclick="logoutUser()">🚪 Çıkış Yap</button>
+        <div class="user-info">
+            <span class="username-tag" id="current-user-display">👤 Kullanıcı</span>
+            <button class="btn-logout" onclick="logoutUser()">🚪 Çıkış Yap</button>
+        </div>
     </div>
 
-    <!-- GİRİŞ EKRANI (Çıkış Yapıldığında Görünür) -->
-    <div class="login-card card" id="login-screen" style="display: none;">
-        <h3>Finansım'a Hoş Geldiniz</h3>
-        <p>Portföyünüze erişmek ve canlı piyasayı takip etmek için giriş yapın.</p>
-        <button class="btn" style="background: #6366f1;" onclick="loginUser()">Portföyüme Giriş Yap</button>
+    <!-- GİRİŞ YAP VE KAYIT OL PANELİ -->
+    <div class="auth-container card" id="auth-screen">
+        <div class="auth-tabs">
+            <button class="auth-tab active" id="tab-login-btn" onclick="switchAuthTab('login')">Giriş Yap</button>
+            <button class="auth-tab" id="tab-register-btn" onclick="switchAuthTab('register')">Yeni Üyelik (Kayıt Ol)</button>
+        </div>
+
+        <!-- GİRİŞ FORMU -->
+        <form class="auth-form" id="login-form" onsubmit="handleLogin(event)">
+            <div class="form-group">
+                <label>Kullanıcı Adı</label>
+                <input type="text" id="login-username" placeholder="Kullanıcı adınızı girin" required autocomplete="username">
+            </div>
+            <div class="form-group">
+                <label>Şifre</label>
+                <input type="password" id="login-password" placeholder="Şifrenizi girin" required autocomplete="current-password">
+            </div>
+            <div class="auth-error" id="login-error">Kullanıcı adı veya şifre hatalı!</div>
+            <button type="submit" class="btn btn-primary">Giriş Yap</button>
+        </form>
+
+        <!-- KAYIT OL FORMU -->
+        <form class="auth-form" id="register-form" style="display: none;" onsubmit="handleRegister(event)">
+            <div class="form-group">
+                <label>Kullanıcı Adı</label>
+                <input type="text" id="reg-username" placeholder="Kullanıcı adı belirleyin" required autocomplete="username">
+            </div>
+            <div class="form-group">
+                <label>Şifre</label>
+                <input type="password" id="reg-password" placeholder="Şifre belirleyin" required autocomplete="new-password">
+            </div>
+            <div class="form-group">
+                <label>Şifre (Tekrar)</label>
+                <input type="password" id="reg-password-confirm" placeholder="Şifrenizi tekrar girin" required autocomplete="new-password">
+            </div>
+            <div class="auth-error" id="reg-error"></div>
+            <div class="auth-success" id="reg-success">Kayıt başarılı! Giriş sekmesine yönlendiriliyorsunuz...</div>
+            <button type="submit" class="btn">Hesap Oluştur</button>
+        </form>
     </div>
 
-    <!-- 3. PORTFÖY YÖNETİM PANELİ -->
-    <div class="app-container" id="portfolio-screen">
+    <!-- 3. PORTFÖY YÖNETİM PANELİ (Giriş Yapılınca Açılır) -->
+    <div class="app-container" id="portfolio-screen" style="display: none;">
         
         <!-- ÖZET KART -->
         <div class="total-portfolio-card">
@@ -375,6 +465,131 @@
     <script>
         let livePrices = {};
         let myPortfolio = [];
+        let currentUser = null;
+
+        // ÜYELİK & GİRİŞ SİSTEMİ MANTIĞI
+        function getUsersFromStorage() {
+            const users = localStorage.getItem("finansim_users");
+            return users ? JSON.parse(users) : [];
+        }
+
+        function switchAuthTab(tab) {
+            document.getElementById('login-error').style.display = 'none';
+            document.getElementById('reg-error').style.display = 'none';
+            document.getElementById('reg-success').style.display = 'none';
+
+            if (tab === 'login') {
+                document.getElementById('tab-login-btn').classList.add('active');
+                document.getElementById('tab-register-btn').classList.remove('active');
+                document.getElementById('login-form').style.display = 'flex';
+                document.getElementById('register-form').style.display = 'none';
+            } else {
+                document.getElementById('tab-register-btn').classList.add('active');
+                document.getElementById('tab-login-btn').classList.remove('active');
+                document.getElementById('register-form').style.display = 'flex';
+                document.getElementById('login-form').style.display = 'none';
+            }
+        }
+
+        function handleRegister(e) {
+            e.preventDefault();
+            const username = document.getElementById('reg-username').value.trim().toLowerCase();
+            const password = document.getElementById('reg-password').value;
+            const passwordConfirm = document.getElementById('reg-password-confirm').value;
+
+            const errDiv = document.getElementById('reg-error');
+            const successDiv = document.getElementById('reg-success');
+            errDiv.style.display = 'none';
+            successDiv.style.display = 'none';
+
+            if (!username || !password) {
+                errDiv.innerText = "Lütfen tüm alanları doldurun!";
+                errDiv.style.display = 'block';
+                return;
+            }
+
+            if (password !== passwordConfirm) {
+                errDiv.innerText = "Şifreler birbiriyle eşleşmiyor!";
+                errDiv.style.display = 'block';
+                return;
+            }
+
+            const users = getUsersFromStorage();
+            if (users.some(u => u.username === username)) {
+                errDiv.innerText = "Bu kullanıcı adı zaten alınmış!";
+                errDiv.style.display = 'block';
+                return;
+            }
+
+            users.push({ username: username, password: password });
+            localStorage.setItem("finansim_users", JSON.stringify(users));
+
+            successDiv.style.display = 'block';
+            setTimeout(() => {
+                switchAuthTab('login');
+                document.getElementById('login-username').value = username;
+                document.getElementById('login-password').value = password;
+            }, 1200);
+        }
+
+        function handleLogin(e) {
+            e.preventDefault();
+            const username = document.getElementById('login-username').value.trim().toLowerCase();
+            const password = document.getElementById('login-password').value;
+            const errDiv = document.getElementById('login-error');
+            errDiv.style.display = 'none';
+
+            const users = getUsersFromStorage();
+            const user = users.find(u => u.username === username && u.password === password);
+
+            if (user) {
+                currentUser = user.username;
+                localStorage.setItem("finansim_active_user", currentUser);
+                showPortfolioApp();
+            } else {
+                errDiv.innerText = "Kullanıcı adı veya şifre hatalı!";
+                errDiv.style.display = 'block';
+            }
+        }
+
+        function showPortfolioApp() {
+            document.getElementById('auth-screen').style.display = 'none';
+            document.getElementById('header-bar').style.display = 'flex';
+            document.getElementById('portfolio-screen').style.display = 'block';
+            document.getElementById('current-user-display').innerText = `👤 ${currentUser}`;
+
+            loadPortfolioFromStorage();
+            fetchMarketData();
+        }
+
+        function logoutUser() {
+            if (confirm("Çıkış yapmak istediğinize emin misiniz?")) {
+                currentUser = null;
+                localStorage.removeItem("finansim_active_user");
+                
+                document.getElementById('portfolio-screen').style.display = 'none';
+                document.getElementById('header-bar').style.display = 'none';
+                document.getElementById('auth-screen').style.display = 'block';
+
+                document.getElementById('login-username').value = '';
+                document.getElementById('login-password').value = '';
+                switchAuthTab('login');
+            }
+        }
+
+        // KULLANICIYA ÖZEL LOCALSTORAGE PORTFÖY SAKLAMA
+        function loadPortfolioFromStorage() {
+            if (!currentUser) return;
+            const saved = localStorage.getItem(`finansim_portfolio_${currentUser}`);
+            myPortfolio = saved ? JSON.parse(saved) : [];
+            updatePortfolioUI();
+        }
+
+        function savePortfolioToStorage() {
+            if (!currentUser) return;
+            localStorage.setItem(`finansim_portfolio_${currentUser}`, JSON.stringify(myPortfolio));
+            updatePortfolioUI();
+        }
 
         // CANLI VERİ ÇEKME MOTORU
         async function fetchMarketData() {
@@ -462,7 +677,8 @@
             }
 
             const now = new Date();
-            document.getElementById('last-update-time').innerText = "Son Canlı Güncelleme: " + now.toLocaleTimeString('tr-TR');
+            const timeSpan = document.getElementById('last-update-time');
+            if (timeSpan) timeSpan.innerText = "Son Canlı Güncelleme: " + now.toLocaleTimeString('tr-TR');
 
             renderTicker();
             renderFixedBar();
@@ -514,37 +730,7 @@
             return cost; 
         }
 
-        // LOCALSTORAGE - VERİLERİ SİLMEDEN ÇEKME
-        function loadPortfolioFromStorage() {
-            const saved = localStorage.getItem("finansim_my_portfolio");
-            myPortfolio = saved ? JSON.parse(saved) : [];
-            updatePortfolioUI();
-        }
-
-        function savePortfolioToStorage() {
-            localStorage.setItem("finansim_my_portfolio", JSON.stringify(myPortfolio));
-            updatePortfolioUI();
-        }
-
-        // GÜVENLİ ÇIKIŞ (VERİLERİ SİLMEZ)
-        function logoutUser() {
-            if (confirm("Çıkış yapmak istediğinize emin misiniz?")) {
-                document.getElementById('portfolio-screen').style.display = 'none';
-                document.getElementById('header-bar').style.display = 'none';
-                document.getElementById('login-screen').style.display = 'block';
-            }
-        }
-
-        // GİRİŞ YAPMA
-        function loginUser() {
-            document.getElementById('login-screen').style.display = 'none';
-            document.getElementById('header-bar').style.display = 'flex';
-            document.getElementById('portfolio-screen').style.display = 'block';
-            loadPortfolioFromStorage();
-            fetchMarketData();
-        }
-
-        // FORM GÖNDERİMİ
+        // FORM GÖNDERİMİ (PORTFÖYE VARLIK EKLEME)
         document.getElementById('add-asset-form').addEventListener('submit', function(e) {
             e.preventDefault();
 
@@ -595,6 +781,8 @@
 
         // TABLO VE HESAPLAMA GÜNCELLEME
         function updatePortfolioUI() {
+            if (!currentUser) return;
+
             let totalLiveValue = 0;
             let totalCost = 0;
 
@@ -644,10 +832,16 @@
             `;
         }
 
+        // OTOMATİK OTURUM KONTROLÜ
         window.onload = function() {
-            loadPortfolioFromStorage();
             fetchMarketData();
             setInterval(fetchMarketData, 10000);
+
+            const activeUser = localStorage.getItem("finansim_active_user");
+            if (activeUser) {
+                currentUser = activeUser;
+                showPortfolioApp();
+            }
         };
     </script>
 </body>

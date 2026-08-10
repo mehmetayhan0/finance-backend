@@ -77,7 +77,6 @@ def init_db():
         );
     """)
     
-    # Eksik sütunları var olan tabloya güvenle ekleyen migration komutları
     cursor.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS email VARCHAR(255);")
     cursor.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS is_verified BOOLEAN DEFAULT FALSE;")
     cursor.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token VARCHAR(255);")
@@ -121,20 +120,52 @@ class Asset(BaseModel):
     amount: float
     buy_price: float = 0.0
 
-def get_live_gram_gold_price():
+def fetch_live_price(symbol: str):
+    """Canlı fiyatı çekmek için 2 kademeli güvenli mekanizma"""
+    if not symbol:
+        return None
+    
+    # 1. Yöntem: fast_info
     try:
-        price = yf.Ticker("GAUTRY=X").fast_info.last_price
-        if price and price > 0:
+        ticker = yf.Ticker(symbol)
+        price = ticker.fast_info.last_price
+        if price is not None and float(price) > 0:
             return float(price)
     except:
         pass
+
+    # 2. Yöntem: history (Geçmiş/Son kapanış verisi)
+    try:
+        ticker = yf.Ticker(symbol)
+        df = ticker.history(period="2d")
+        if not df.empty:
+            price = df['Close'].iloc[-1]
+            if price is not None and float(price) > 0:
+                return float(price)
+    except:
+        pass
+
+    return None
+
+def get_live_gram_gold_price():
+    # Önce direkt GAUTRY=X sembolünü dene
+    price = fetch_live_price("GAUTRY=X")
+    if price and price > 0:
+        return price
+    
+    # Yedek Hesaplama: (Ons Altın $ * Dolar Kuru ₺) / 31.1034768
+    gold_ons = fetch_live_price("GC=F")
+    usd_try = fetch_live_price("USDTRY=X")
+    if gold_ons and usd_try:
+        return (gold_ons * usd_try) / 31.1034768
+        
     return None
 
 def resolve_asset_details(symbol_input: str):
     clean = symbol_input.strip().lower()
     clean_ascii = clean.replace("ı", "i").replace("ğ", "g").replace("ü", "u").replace("ş", "s").replace("ö", "o").replace("ç", "c")
     
-    if clean_ascii in ["gram altın", "gram altin", "altin", "altın", "gram", "gautry=x"]:
+    if clean_ascii in ["gram altin", "gram altın", "altin", "altın", "gram", "gautry=x"]:
         return "GOLD", 1.0, "GRAM ALTIN"
     elif "ceyrek" in clean_ascii or "çeyrek" in clean:
         return "GOLD", 1.63, "ÇEYREK ALTIN"
@@ -265,21 +296,20 @@ def get_portfolio(token: str):
         buy_price = item['buy_price']
         
         yf_symbol, multiplier, display_name = resolve_asset_details(raw_symbol)
-        current_price = buy_price
+        live_price = None
         
         if yf_symbol == "GOLD":
             if gram_gold_cache is None:
                 gram_gold_cache = get_live_gram_gold_price()
-            if gram_gold_cache:
-                current_price = round(gram_gold_cache * multiplier, 2)
+            live_price = gram_gold_cache
         else:
-            try:
-                ticker = yf.Ticker(yf_symbol)
-                live_price = ticker.fast_info.last_price
-                if live_price:
-                    current_price = round(float(live_price) * multiplier, 2)
-            except:
-                pass
+            live_price = fetch_live_price(yf_symbol)
+            
+        # Eğer canlı fiyat başarıyla çekildiyse çarp, aksi halde maliyeti kullan
+        if live_price and live_price > 0:
+            current_price = round(live_price * multiplier, 2)
+        else:
+            current_price = buy_price
             
         total_cost = round(amount * buy_price, 2)
         current_value = round(amount * current_price, 2)

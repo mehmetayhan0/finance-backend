@@ -67,29 +67,57 @@ class Asset(BaseModel):
     amount: float
     buy_price: float = 0.0
 
-# Akıllı Sembol ve Fiyat Dönüştürücü
-def resolve_symbol_and_price(symbol_input: str):
-    clean = symbol_input.strip().upper()
+# Canlı Gram Altın Fiyatı Çekme / Hesaplama (Yedekli Sistem)
+def get_live_gram_gold_price():
+    # 1. Deneme: Doğrudan GAUTRY=X kuru
+    try:
+        price = yf.Ticker("GAUTRY=X").fast_info.last_price
+        if price and price > 0:
+            return float(price)
+    except:
+        pass
+        
+    # 2. Deneme (Garanti Yedek): Ons Altın * Dolar Kuru / 31.1035
+    try:
+        ons = yf.Ticker("GC=F").fast_info.last_price
+        usd = yf.Ticker("USDTRY=X").fast_info.last_price
+        if ons and usd:
+            calculated_gram = (ons * usd) / 31.1034768
+            return float(calculated_gram)
+    except:
+        pass
+        
+    return None
+
+# Akıllı Sembol ve Fiyat Çözücü
+def resolve_asset_details(symbol_input: str):
+    clean = symbol_input.strip().lower()
+    clean_ascii = clean.replace("ı", "i").replace("ğ", "g").replace("ü", "u").replace("ş", "s").replace("ö", "o").replace("ç", "c")
     
-    # Altın Türleri (Gram Altın GAUTRY=X baz alınarak katsayı ile hesaplanır)
-    if clean in ["GRAM ALTIN", "ALTIN", "GRAM", "GAUTRY=X"]:
-        return "GAUTRY=X", 1.0, "GRAM ALTIN"
-    elif "ÇEYREK" in clean or "CEYREK" in clean:
-        return "GAUTRY=X", 1.63, "ÇEYREK ALTIN"
-    elif "YARIM" in clean:
-        return "GAUTRY=X", 3.26, "YARIM ALTIN"
-    elif "TAM" in clean or "ZİYNET" in clean or "ZIYNET" in clean:
-        return "GAUTRY=X", 6.52, "TAM ALTIN"
-    elif clean in ["DOLAR", "USD"]:
+    # Gram Altın
+    if clean_ascii in ["gram altın", "gram altin", "altin", "altın", "gram", "gautry=x"]:
+        return "GOLD", 1.0, "GRAM ALTIN"
+    # Çeyrek Altın (1.63 gram)
+    elif "ceyrek" in clean_ascii or "çeyrek" in clean:
+        return "GOLD", 1.63, "ÇEYREK ALTIN"
+    # Yarım Altın (3.26 gram)
+    elif "yarim" in clean_ascii or "yarım" in clean:
+        return "GOLD", 3.26, "YARIM ALTIN"
+    # Tam / Ziynet Altın (6.52 gram)
+    elif "tam" in clean_ascii or "ziynet" in clean_ascii:
+        return "GOLD", 6.52, "TAM ALTIN"
+    # Dövizler
+    elif clean_ascii in ["dolar", "usd"]:
         return "USDTRY=X", 1.0, "USD/TRY"
-    elif clean in ["EURO", "EUR"]:
+    elif clean_ascii in ["euro", "eur"]:
         return "EURTRY=X", 1.0, "EUR/TRY"
     
-    # Borsa İstanbul Hisseleri (Eğer .IS yoksa ve yabancı sembol değilse ekler)
-    if not clean.endswith(".IS") and not "=" in clean and len(clean) <= 6:
-        return f"{clean}.IS", 1.0, clean
+    # Borsa İstanbul Hisseleri
+    raw_upper = symbol_input.strip().upper()
+    if not raw_upper.endswith(".IS") and not "=" in raw_upper and len(raw_upper) <= 6:
+        return f"{raw_upper}.IS", 1.0, raw_upper
         
-    return clean, 1.0, clean
+    return raw_upper, 1.0, raw_upper
 
 @app.post("/register")
 def register(user: UserAuth):
@@ -139,21 +167,28 @@ def get_portfolio(token: str):
     conn.close()
     
     result = []
+    gram_gold_cache = None
+    
     for item in items:
         asset_id, raw_symbol, amount, buy_price = item
         
-        # Sembolü çöz ve katsayıyı al
-        yf_symbol, multiplier, display_name = resolve_symbol_and_price(raw_symbol)
-        
+        yf_symbol, multiplier, display_name = resolve_asset_details(raw_symbol)
         current_price = buy_price
-        try:
-            ticker = yf.Ticker(yf_symbol)
-            live_price = ticker.fast_info.last_price
-            if live_price:
-                # Katsayı ile çarparak (örn: gram fiyatı * 1.63 = çeyrek altın fiyatı) hesaplar
-                current_price = round(live_price * multiplier, 2)
-        except:
-            pass
+        
+        # Eğer Altın ise özel yedekli fiyat çekiciyi çalıştır
+        if yf_symbol == "GOLD":
+            if gram_gold_cache is None:
+                gram_gold_cache = get_live_gram_gold_price()
+            if gram_gold_cache:
+                current_price = round(gram_gold_cache * multiplier, 2)
+        else:
+            try:
+                ticker = yf.Ticker(yf_symbol)
+                live_price = ticker.fast_info.last_price
+                if live_price:
+                    current_price = round(float(live_price) * multiplier, 2)
+            except:
+                pass
             
         total_cost = round(amount * buy_price, 2)
         current_value = round(amount * current_price, 2)

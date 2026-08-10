@@ -2,26 +2,15 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Finansım - Anlık Canlı Portföy Takibi</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finansım - Anlık Portföy ve Piyasa Takibi</title>
     
-    <!-- PWA Manifest & Renk Ayarları -->
-    <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#4f46e5">
-
-    <!-- MOBİL TAM EKRAN META ETİKETLERİ -->
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Finansım">
-
     <style>
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
             font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            -webkit-tap-highlight-color: transparent;
         }
 
         body {
@@ -31,9 +20,84 @@
             user-select: none;
         }
 
+        /* 1. EN ÜSTTE SAĞDAN SOLA KAYAN BIST HİSSE BANTI */
+        .ticker-wrap {
+            width: 100%;
+            background-color: #020617;
+            border-bottom: 1px solid #1e293b;
+            overflow: hidden;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .ticker {
+            display: flex;
+            white-space: nowrap;
+            animation: marquee 25s linear infinite;
+        }
+
+        .ticker:hover {
+            animation-play-state: paused; /* Üzerine gelince durur */
+        }
+
+        @keyframes marquee {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+
+        .ticker-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 0 20px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .up { color: #22c55e; }
+        .down { color: #ef4444; }
+
+        /* 2. SABİT DÖVİZ VE KIYMETLİ MADEN BANTI */
+        .fixed-market-bar {
+            background: #1e293b;
+            padding: 12px 16px;
+            border-bottom: 1px solid #334155;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .market-card {
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 10px;
+            padding: 8px 14px;
+            min-width: 110px;
+            text-align: center;
+        }
+
+        .market-card small {
+            display: block;
+            color: #94a3b8;
+            font-size: 11px;
+            margin-bottom: 2px;
+        }
+
+        .market-card strong {
+            font-size: 14px;
+            color: #f8fafc;
+        }
+
+        /* KAPSAYICI VE DİĞER STİLLER */
         .container {
             width: 100%;
-            max-width: 480px;
+            max-width: 440px;
             margin: auto;
             padding: 16px;
         }
@@ -46,7 +110,6 @@
             display: none;
         }
 
-        /* Kart Stilleri */
         .card {
             background: #1e293b;
             border: 1px solid #334155;
@@ -56,9 +119,6 @@
             margin-bottom: 20px;
         }
 
-        h2, h3, h4 { color: #ffffff; }
-
-        /* Buton Stilleri */
         .btn {
             width: 100%;
             padding: 12px;
@@ -69,79 +129,20 @@
             font-size: 15px;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.2s;
         }
 
-        .btn:hover { background-color: #4f46e5; }
         .btn-secondary { background-color: #10b981; }
-        .btn-secondary:hover { background-color: #059669; }
         .btn-danger { background-color: #ef4444; }
 
-        /* Canlı Piyasa Bantı (Ticker) */
-        .market-ticker {
-            display: flex;
-            gap: 12px;
-            overflow-x: auto;
-            padding: 10px 0;
-            margin-bottom: 16px;
-            scrollbar-width: none;
-        }
-        .market-ticker::-webkit-scrollbar { display: none; }
-
-        .ticker-item {
-            background: #334155;
-            padding: 8px 14px;
-            border-radius: 20px;
-            font-size: 12px;
-            white-space: nowrap;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        /* Portföy Özet Kartı */
         .total-portfolio-card {
             background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
             border-radius: 20px;
             padding: 24px;
             text-align: center;
-            margin-bottom: 20px;
-            box-shadow: 0 8px 20px rgba(79, 70, 229, 0.3);
-        }
-
-        .total-portfolio-card small {
-            font-size: 13px;
-            letter-spacing: 1px;
-            opacity: 0.9;
-            text-transform: uppercase;
-        }
-
-        .total-portfolio-card h1 {
-            font-size: 36px;
-            margin: 8px 0;
-            font-weight: 800;
-        }
-
-        /* Kategori Dağılım Grid */
-        .asset-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 12px;
+            margin-top: 16px;
             margin-bottom: 20px;
         }
 
-        .asset-card {
-            background: #1e293b;
-            border: 1px solid #334155;
-            padding: 16px;
-            border-radius: 12px;
-            text-align: center;
-        }
-
-        .asset-card small { color: #94a3b8; font-size: 11px; }
-        .asset-card h3 { font-size: 18px; margin-top: 4px; }
-
-        /* Form Elemanları */
         .form-group { margin-bottom: 12px; text-align: left; }
         .form-group label { display: block; font-size: 12px; color: #94a3b8; margin-bottom: 4px; }
         .form-group input, .form-group select {
@@ -155,7 +156,6 @@
             outline: none;
         }
 
-        /* Varlık Listesi Tablosu */
         .asset-table {
             width: 100%;
             border-collapse: collapse;
@@ -163,32 +163,9 @@
             font-size: 13px;
         }
 
-        .asset-table th {
-            text-align: left;
-            padding: 10px;
-            color: #94a3b8;
-            border-bottom: 1px solid #334155;
-        }
-
-        .asset-table td {
-            padding: 12px 10px;
-            border-bottom: 1px solid #1e293b;
-        }
-
-        .badge {
-            padding: 3px 8px;
-            border-radius: 6px;
-            font-size: 10px;
-            font-weight: bold;
-        }
-        .badge-hisse { background: #3b82f6; color: white; }
-        .badge-altin { background: #eab308; color: black; }
-        .badge-doviz { background: #10b981; color: white; }
-        .badge-kripto { background: #a855f7; color: white; }
-
-        .delete-btn { background: none; border: none; color: #ef4444; cursor: pointer; }
-
-        /* Auth Sekmeleri */
+        .asset-table th { text-align: left; padding: 10px; color: #94a3b8; border-bottom: 1px solid #334155; }
+        .asset-table td { padding: 12px 10px; border-bottom: 1px solid #1e293b; }
+        
         .tab-buttons { display: flex; margin-bottom: 20px; border-bottom: 1px solid #334155; }
         .tab-btn { flex: 1; padding: 10px; background: none; border: none; color: #94a3b8; cursor: pointer; font-weight: 600; }
         .tab-btn.active { color: #6366f1; border-bottom: 2px solid #6366f1; }
@@ -196,17 +173,49 @@
 </head>
 <body>
 
-    <!-- KULLANICI GİRİŞ & KAYIT EKRANI -->
-    <div id="auth-section" class="container">
-        <div class="card" style="text-align: center; margin-top: 40px;">
-            <h2>Finansım Portföy</h2>
-            <p style="color: #94a3b8; font-size: 13px; margin-bottom: 20px;">Anlık Toplam Portföy Değerinizi Takip Edin</p>
+    <!-- 1. EN ÜSTTE KAYAN POPÜLER HİSSE BANTI (MARQUEE TICKER) -->
+    <div class="ticker-wrap">
+        <div class="ticker" id="stock-ticker">
+            <!-- JavaScript ile Dinamik Doldurulur -->
+            <div class="ticker-item"><span>THYAO:</span> <strong>₺305.50</strong> <span class="up">▲ %1.85</span></div>
+            <div class="ticker-item"><span>GARAN:</span> <strong>₺112.20</strong> <span class="up">▲ %0.90</span></div>
+            <div class="ticker-item"><span>EREGL:</span> <strong>₺52.10</strong> <span class="down">▼ %1.15</span></div>
+            <div class="ticker-item"><span>AKBNK:</span> <strong>₺58.40</strong> <span class="up">▲ %2.10</span></div>
+            <div class="ticker-item"><span>SASA:</span> <strong>₺44.30</strong> <span class="down">▼ %0.45</span></div>
+            <div class="ticker-item"><span>BIST100:</span> <strong>9,850.10</strong> <span class="up">▲ %1.12</span></div>
+            <!-- Kesintisiz kayma için döngü tekrarı -->
+            <div class="ticker-item"><span>THYAO:</span> <strong>₺305.50</strong> <span class="up">▲ %1.85</span></div>
+            <div class="ticker-item"><span>GARAN:</span> <strong>₺112.20</strong> <span class="up">▲ %0.90</span></div>
+            <div class="ticker-item"><span>EREGL:</span> <strong>₺52.10</strong> <span class="down">▼ %1.15</span></div>
+            <div class="ticker-item"><span>AKBNK:</span> <strong>₺58.40</strong> <span class="up">▲ %2.10</span></div>
+        </div>
+    </div>
 
-            <div style="margin-bottom: 20px;">
-                <a href="/download-apk" style="text-decoration: none;">
-                    <button class="btn btn-secondary">📲 APK Uygulamasını İndir</button>
-                </a>
-            </div>
+    <!-- 2. SABİT DÖVİZ VE KIYMETLİ MADEN KARTLARI BANTI -->
+    <div class="fixed-market-bar">
+        <div class="market-card">
+            <small>💵 DOLAR (USD)</small>
+            <strong id="val-usd">₺33.50</strong>
+        </div>
+        <div class="market-card">
+            <small>💶 EURO (EUR)</small>
+            <strong id="val-eur">₺36.40</strong>
+        </div>
+        <div class="market-card">
+            <small>🥇 GRAM ALTIN</small>
+            <strong id="val-altin">₺2,550</strong>
+        </div>
+        <div class="market-card">
+            <small>🥈 GÜMÜŞ</small>
+            <strong id="val-gumus">₺31.20</strong>
+        </div>
+    </div>
+
+    <!-- GİRİŞ & KAYIT EKRANI -->
+    <div id="auth-section" class="container">
+        <div class="card" style="text-align: center; margin-top: 30px;">
+            <h2 style="font-size: 26px; color: #6366f1;">Finansım</h2>
+            <p style="color: #94a3b8; font-size: 13px; margin-top: 6px; margin-bottom: 24px;">Canlı Toplam Portföy Yönetim Platformu</p>
 
             <div class="tab-buttons">
                 <button class="tab-btn active" onclick="switchTab('login')">Giriş Yap</button>
@@ -222,7 +231,7 @@
                     <label>Şifre</label>
                     <input type="password" id="login-password" placeholder="Şifreniz" required>
                 </div>
-                <button type="submit" class="btn">Giriş Yap</button>
+                <button type="submit" class="btn" style="margin-top: 10px;">Giriş Yap</button>
             </form>
 
             <form id="register-form" onsubmit="handleRegister(event)" style="display: none;">
@@ -238,91 +247,61 @@
                     <label>Şifre</label>
                     <input type="password" id="reg-password" required>
                 </div>
-                <button type="submit" class="btn">Kayıt Ol</button>
+                <button type="submit" class="btn" style="margin-top: 10px;">Kayıt Ol</button>
             </form>
         </div>
     </div>
 
-    <!-- CANLI PORTFÖY PANENLİ -->
+    <!-- PORTFÖY YÖNETİM PANELİ -->
     <div id="app-section" class="app-container">
-        
-        <!-- ÜST BARS VE ÇIKIŞ -->
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
             <div>
-                <h3 style="color: #6366f1;">Finansım</h3>
+                <h3 style="color: #6366f1; font-size: 22px;">Finansım Portföy</h3>
                 <small id="user-display-name" style="color: #94a3b8;"></small>
             </div>
-            <button class="btn btn-danger" style="width: auto; padding: 6px 14px; font-size: 12px;" onclick="manualLogout()">Çıkış Yap</button>
+            <button class="btn btn-danger" style="width: auto; padding: 8px 16px; font-size: 13px;" onclick="manualLogout()">Çıkış Yap</button>
         </div>
 
-        <!-- CANLI PİYASA KURLARI BANTI -->
-        <div class="market-ticker">
-            <div class="ticker-item"><span>💵 USD:</span> <strong id="ticker-usd">₺33.50</strong></div>
-            <div class="ticker-item"><span>💶 EUR:</span> <strong id="ticker-eur">₺36.40</strong></div>
-            <div class="ticker-item"><span>🥇 Gram Altın:</span> <strong id="ticker-altin">₺2,550</strong></div>
-            <div class="ticker-item"><span>📈 THYAO:</span> <strong id="ticker-thyao">₺305.00</strong></div>
-            <div class="ticker-item"><span>₿ BTC:</span> <strong id="ticker-btc">$64,200</strong></div>
-        </div>
-
-        <!-- ANLIK TOPLAM PORTFÖY DEĞERİ -->
         <div class="total-portfolio-card">
             <small>Anlık Toplam Portföy Değeri</small>
             <h1 id="total-portfolio-value">₺0.00</h1>
-            <div id="portfolio-profit-loss" style="font-size: 13px; opacity: 0.9;">Toplanan Varlık Sayısı: 0</div>
+            <div id="portfolio-profit-loss" style="font-size: 13px; opacity: 0.9;">Takip Edilen Varlık: 0 Kalem</div>
         </div>
 
-        <!-- KATEGORİ ÖZET BİLGİLERİ -->
-        <div class="asset-grid">
-            <div class="asset-card">
-                <small>HİSSE SENETLERİ</small>
-                <h3 id="cat-hisse">₺0.00</h3>
-            </div>
-            <div class="asset-card">
-                <small>ALTIN & MADEN</small>
-                <h3 id="cat-altin">₺0.00</h3>
-            </div>
-            <div class="asset-card">
-                <small>DÖVİZ VARLIKLARI</small>
-                <h3 id="cat-doviz">₺0.00</h3>
-            </div>
-            <div class="asset-card">
-                <small>KRİPTO PARALAR</small>
-                <h3 id="cat-kripto">₺0.00</h3>
-            </div>
-        </div>
-
-        <!-- PORTFÖYE YENİ VARLIK EKLE -->
         <div class="card">
-            <h4>+ Portföye Varlık Ekle</h4>
-            <form id="add-asset-form" onsubmit="addAsset(event)" style="margin-top: 14px;">
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px;">
+            <h4 style="margin-bottom: 12px;">+ Portföye Yeni Varlık Ekle</h4>
+            <form id="add-asset-form" onsubmit="addAsset(event)">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px;">
                     <div class="form-group">
                         <label>Varlık Türü</label>
-                        <select id="asset-type" onchange="updatePriceHint()">
-                            <option value="hisse">Hisse Senedi (BIST/US)</option>
-                            <option value="altin">Altın / Değerli Maden</option>
-                            <option value="doviz">Döviz (USD/EUR vb.)</option>
+                        <select id="asset-type">
+                            <option value="hisse">Hisse Senedi</option>
+                            <option value="altin">Altın / Gümüş</option>
+                            <option value="doviz">Döviz</option>
                             <option value="kripto">Kripto Para</option>
                         </select>
                     </div>
                     <div class="form-group">
                         <label>Varlık Kodu / Adı</label>
-                        <input type="text" id="asset-code" placeholder="Örn: THYAO, Gram Altın, USD" required>
+                        <input type="text" id="asset-code" placeholder="Örn: THYAO, Gram Altın" required>
                     </div>
                     <div class="form-group">
-                        <label>Eldeki Adet / Miktar</label>
-                        <input type="number" id="asset-qty" step="0.01" placeholder="100" required>
+                        <label>Eldeki Adet</label>
+                        <input type="number" id="asset-qty" step="0.01" placeholder="Adet" required>
                     </div>
                     <div class="form-group">
-                        <label>Anlık Birim Fiyatı (₺)</label>
-                        <input type="number" id="asset-price" step="0.01" placeholder="Anlık Fiyat" required>
+                        <label>Alış / Maliyet Fiyatı (₺)</label>
+                        <input type="number" id="asset-cost" step="0.01" placeholder="Aldığın Fiyat" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Anlık Güncel Fiyat (₺)</label>
+                        <input type="number" id="asset-price" step="0.01" placeholder="Şu Anki Fiyat" required>
                     </div>
                 </div>
-                <button type="submit" class="btn btn-secondary" style="margin-top: 8px;">Portföye Ekle</button>
+                <button type="submit" class="btn btn-secondary" style="margin-top: 10px;">Portföye Ekle</button>
             </form>
         </div>
 
-        <!-- VARLIK LİSTESİ -->
         <div class="card">
             <h4>Portföyümdeki Varlıklar</h4>
             <div style="overflow-x: auto;">
@@ -331,28 +310,22 @@
                         <tr>
                             <th>Varlık</th>
                             <th>Miktar</th>
-                            <th>Anlık Fiyat</th>
+                            <th>Alış Fiyatı</th>
+                            <th>Güncel Fiyat</th>
                             <th>Toplam Değer</th>
-                            <th>Sil</th>
+                            <th>Kâr / Zarar (₺)</th>
+                            <th>Kâr / Zarar (%)</th>
+                            <th style="text-align: center;">Sil</th>
                         </tr>
                     </thead>
                     <tbody id="asset-list-body">
-                        <!-- Dinamik Varlıklar -->
                     </tbody>
                 </table>
             </div>
         </div>
-
     </div>
 
     <script>
-        // PWA Servis Kaydı
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js').catch(err => console.log(err));
-            });
-        }
-
         function switchTab(tab) {
             document.getElementById('login-form').style.display = tab === 'login' ? 'block' : 'none';
             document.getElementById('register-form').style.display = tab === 'register' ? 'block' : 'none';
@@ -372,20 +345,18 @@
 
             document.getElementById('auth-section').style.display = 'none';
             document.getElementById('app-section').style.display = 'block';
-            document.getElementById('user-display-name').innerText = "Kullanıcı: " + username;
+            document.getElementById('user-display-name').innerText = "Hoş geldin, " + username;
 
             loadPortfolioData();
-            startInactivityMonitoring();
         }
 
         function handleRegister(e) {
             e.preventDefault();
-            alert("Kayıt başarılı! Şimdi giriş yapabilirsiniz.");
+            alert("Kayıt başarılı! Giriş yapabilirsiniz.");
             switchTab('login');
         }
 
         function manualLogout() {
-            stopInactivityMonitoring();
             sessionStorage.removeItem("loggedInUser");
             document.getElementById('app-section').style.display = 'none';
             document.getElementById('auth-section').style.display = 'block';
@@ -407,19 +378,19 @@
             const type = document.getElementById('asset-type').value;
             const code = document.getElementById('asset-code').value.toUpperCase();
             const qty = parseFloat(document.getElementById('asset-qty').value);
+            const cost = parseFloat(document.getElementById('asset-cost').value);
             const price = parseFloat(document.getElementById('asset-price').value);
 
-            const newAsset = {
+            myPortfolio.push({
                 id: Date.now(),
                 type: type,
                 code: code,
                 qty: qty,
+                cost: cost,
                 price: price
-            };
+            });
 
-            myPortfolio.push(newAsset);
             savePortfolioData();
-
             document.getElementById('add-asset-form').reset();
         }
 
@@ -430,80 +401,51 @@
 
         function updatePortfolioUI() {
             let totalValue = 0;
-            let catTotals = { hisse: 0, altin: 0, doviz: 0, kripto: 0 };
+            let totalCost = 0;
 
             const tbody = document.getElementById('asset-list-body');
             tbody.innerHTML = '';
 
             if (myPortfolio.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#94a3b8; padding:15px;">Portföyünüzde henüz bir varlık bulunmuyor.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; color:#94a3b8; padding:20px;">Portföyünüzde henüz bir varlık bulunmuyor.</td></tr>';
             }
 
             myPortfolio.forEach(item => {
                 const itemTotal = item.qty * item.price;
-                totalValue += itemTotal;
-                if (catTotals[item.type] !== undefined) {
-                    catTotals[item.type] += itemTotal;
-                }
+                const itemCostTotal = item.qty * item.cost;
+                const profitLoss = itemTotal - itemCostTotal;
+                const profitLossPercent = item.cost > 0 ? ((item.price - item.cost) / item.cost) * 100 : 0;
 
-                let badgeClass = 'badge-hisse';
-                let typeName = 'Hisse';
-                if (item.type === 'altin') { badgeClass = 'badge-altin'; typeName = 'Altın'; }
-                if (item.type === 'doviz') { badgeClass = 'badge-doviz'; typeName = 'Döviz'; }
-                if (item.type === 'kripto') { badgeClass = 'badge-kripto'; typeName = 'Kripto'; }
+                totalValue += itemTotal;
+                totalCost += itemCostTotal;
+
+                const profitClass = profitLoss >= 0 ? 'up' : 'down';
+                const profitSign = profitLoss >= 0 ? '+' : '';
 
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
-                    <td>
-                        <strong>${item.code}</strong> 
-                        <span class="badge ${badgeClass}">${typeName}</span>
-                    </td>
-                    <td>${item.qty.toLocaleString('tr-TR')} Adet</td>
+                    <td><strong>${item.code}</strong></td>
+                    <td>${item.qty.toLocaleString('tr-TR')}</td>
+                    <td>₺${item.cost.toLocaleString('tr-TR', {minimumFractionDigits: 2})}</td>
                     <td>₺${item.price.toLocaleString('tr-TR', {minimumFractionDigits: 2})}</td>
-                    <td><strong style="color:#10b981;">₺${itemTotal.toLocaleString('tr-TR', {minimumFractionDigits: 2})}</strong></td>
-                    <td><button class="delete-btn" onclick="deleteAsset(${item.id})">🗑️</button></td>
+                    <td><strong>₺${itemTotal.toLocaleString('tr-TR', {minimumFractionDigits: 2})}</strong></td>
+                    <td class="${profitClass}"><strong>${profitSign}₺${profitLoss.toLocaleString('tr-TR', {minimumFractionDigits: 2})}</strong></td>
+                    <td class="${profitClass}"><strong>${profitSign}%${profitLossPercent.toFixed(2)}</strong></td>
+                    <td style="text-align:center;"><button style="background:none; border:none; color:#ef4444; cursor:pointer;" onclick="deleteAsset(${item.id})">🗑️</button></td>
                 `;
                 tbody.appendChild(tr);
             });
 
-            // Toplamlar
+            const netProfit = totalValue - totalCost;
+            const netProfitPercent = totalCost > 0 ? (netProfit / totalCost) * 100 : 0;
+            const netClass = netProfit >= 0 ? 'up' : 'down';
+            const netSign = netProfit >= 0 ? '+' : '';
+
             document.getElementById('total-portfolio-value').innerText = '₺' + totalValue.toLocaleString('tr-TR', {minimumFractionDigits: 2});
-            document.getElementById('portfolio-profit-loss').innerText = `Toplam ${myPortfolio.length} Farklı Varlık Kalemi Takip Ediliyor`;
-
-            document.getElementById('cat-hisse').innerText = '₺' + catTotals.hisse.toLocaleString('tr-TR', {minimumFractionDigits: 2});
-            document.getElementById('cat-altin').innerText = '₺' + catTotals.altin.toLocaleString('tr-TR', {minimumFractionDigits: 2});
-            document.getElementById('cat-doviz').innerText = '₺' + catTotals.doviz.toLocaleString('tr-TR', {minimumFractionDigits: 2});
-            document.getElementById('cat-kripto').innerText = '₺' + catTotals.kripto.toLocaleString('tr-TR', {minimumFractionDigits: 2});
-        }
-
-        // 45 SANİYE GÜVENLİK ZAMANLAYICISI
-        let inactivityTimer;
-        const TIMEOUT_DURATION = 45000;
-        const activityEvents = ['mousemove', 'keydown', 'click', 'touchstart', 'scroll'];
-
-        function resetInactivityTimer() {
-            clearTimeout(inactivityTimer);
-            if (sessionStorage.getItem("loggedInUser")) {
-                inactivityTimer = setTimeout(autoLogout, TIMEOUT_DURATION);
-            }
-        }
-
-        function autoLogout() {
-            stopInactivityMonitoring();
-            sessionStorage.removeItem("loggedInUser");
-            document.getElementById('app-section').style.display = 'none';
-            document.getElementById('auth-section').style.display = 'block';
-            alert("Güvenliğiniz için 45 saniye boyunca işlem yapılmadığından oturumunuz kapatılmıştır.");
-        }
-
-        function startInactivityMonitoring() {
-            activityEvents.forEach(evt => window.addEventListener(evt, resetInactivityTimer, true));
-            resetInactivityTimer();
-        }
-
-        function stopInactivityMonitoring() {
-            activityEvents.forEach(evt => window.removeEventListener(evt, resetInactivityTimer, true));
-            clearTimeout(inactivityTimer);
+            document.getElementById('portfolio-profit-loss').innerHTML = `
+                Toplam Maliyet: ₺${totalCost.toLocaleString('tr-TR', {minimumFractionDigits: 2})} | 
+                Net Kâr/Zarar: <span class="${netClass}" style="font-weight:bold;">${netSign}₺${netProfit.toLocaleString('tr-TR', {minimumFractionDigits: 2})} (${netSign}%${netProfitPercent.toFixed(2)})</span>
+            `;
         }
     </script>
 </body>

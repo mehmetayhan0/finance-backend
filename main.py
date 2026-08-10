@@ -232,13 +232,18 @@ def delete_asset(asset_id: int, token: str):
     conn.close()
     return {"message": "Varlık silindi!"}
 
-@app.get("/")
-def read_root():
-    return FileResponse("index.html")
-    @app.get("/manifest.json")
+@app.get("/manifest.json")
 def get_manifest():
-    return FileResponse("manifest.json")
+    if os.path.exists("manifest.json"):
+        return FileResponse("manifest.json")
+    return {}
 
 @app.get("/sw.js")
 def get_sw():
-    return FileResponse("sw.js", media_type="application/javascript")
+    if os.path.exists("sw.js"):
+        return FileResponse("sw.js", media_type="application/javascript")
+    return ""
+
+@app.get("/")
+def read_root():
+    return FileResponse("index.html")

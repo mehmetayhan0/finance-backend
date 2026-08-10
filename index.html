@@ -3,283 +3,313 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Finans Asistanım - Portföy & Kâr/Zarar</title>
-    
-    <!-- PWA ve Mobil Uygulama Bağlantıları -->
+    <title>Finans Asistanım</title>
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#0f172a">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-
     <style>
-        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { background-color: #0f172a; color: #f8fafc; margin: 0; padding: 20px; }
-        .container { max-width: 900px; margin: 0 auto; }
-        .card { background: #1e293b; padding: 20px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
-        h2 { margin-top: 0; color: #38bdf8; }
-        input, button { padding: 10px 14px; margin: 5px 0; border-radius: 6px; border: 1px solid #334155; background: #0f172a; color: white; width: 100%; }
-        button { background: #0284c7; cursor: pointer; border: none; font-weight: bold; transition: 0.2s; }
-        button:hover { background: #0369a1; }
-        .btn-install { background: #8b5cf6; font-size: 15px; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; gap: 8px; }
-        .btn-install:hover { background: #7c3aed; }
-        .btn-refresh { background: #10b981; width: auto; }
-        .btn-refresh:hover { background: #059669; }
-        .form-group { display: flex; gap: 10px; flex-wrap: wrap; }
-        .form-group input { flex: 1; min-width: 140px; }
-        .form-group button { flex: 1; min-width: 120px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        th, td { text-align: left; padding: 12px; border-bottom: 1px solid #334155; }
-        th { color: #94a3b8; }
-        .profit { color: #4ade80; font-weight: bold; }
-        .loss { color: #f87171; font-weight: bold; }
-        .btn-delete { background: #ef4444; width: auto; padding: 6px 12px; font-size: 12px; }
-        .btn-delete:hover { background: #dc2626; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        body { background-color: #0f172a; color: #f8fafc; display: flex; justify-content: center; min-height: 100vh; padding: 20px; }
+        .container { width: 100%; max-width: 480px; }
+        
+        .card { background: #1e293b; border-radius: 16px; padding: 24px; margin-bottom: 20px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3); border: 1px solid #334155; }
+        h1, h2, h3 { color: #f8fafc; margin-bottom: 16px; text-align: center; }
+        .subtitle { color: #94a3b8; font-size: 0.9rem; text-align: center; margin-bottom: 20px; }
+
+        input, select, button { width: 100%; padding: 12px 16px; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: #fff; margin-bottom: 12px; font-size: 1rem; outline: none; }
+        input:focus { border-color: #38bdf8; }
+        button { background: #38bdf8; color: #0f172a; font-weight: bold; cursor: pointer; border: none; transition: 0.2s; }
+        button:hover { background: #0284c7; color: #fff; }
+        button.secondary { background: transparent; color: #94a3b8; border: 1px solid #334155; }
+        button.danger { background: #ef4444; color: #fff; width: auto; padding: 6px 12px; font-size: 0.85rem; }
+
+        .auth-toggle { display: flex; justify-content: space-around; margin-top: 10px; font-size: 0.9rem; color: #38bdf8; cursor: pointer; text-decoration: underline; }
+        
+        .nav-tabs { display: flex; gap: 8px; margin-bottom: 16px; }
+        .nav-tabs button { margin-bottom: 0; background: #1e293b; color: #94a3b8; border: 1px solid #334155; }
+        .nav-tabs button.active { background: #38bdf8; color: #0f172a; }
+
+        .portfolio-item { background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 12px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+        .item-info { font-size: 0.95rem; }
+        .item-title { font-weight: bold; color: #f8fafc; }
+        .item-sub { font-size: 0.8rem; color: #94a3b8; }
+        .profit { color: #22c55e; font-weight: bold; }
+        .loss { color: #ef4444; font-weight: bold; }
+
         .hidden { display: none !important; }
-        .summary-box { display: flex; justify-content: space-between; background: #0f172a; padding: 15px; border-radius: 8px; margin-bottom: 15px; }
-        .summary-item { text-align: center; }
-        .summary-item label { font-size: 12px; color: #94a3b8; display: block; }
-        .summary-item span { font-size: 18px; font-weight: bold; }
-        .header-actions { display: flex; gap: 10px; align-items: center; }
+        .msg { font-size: 0.85rem; text-align: center; margin-bottom: 10px; }
+        .msg.error { color: #ef4444; }
+        .msg.success { color: #22c55e; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <!-- Mobil Uygulamayı Yükle Butonu (Site İçi) -->
-    <button id="pwa-install-btn" class="btn-install hidden" onclick="installPWA()">
-        📲 Uygulamayı Telefona Yükle
-    </button>
-
-    <!-- Giriş / Kayıt Formu -->
-    <div id="auth-section" class="card">
-        <h2 id="form-title">Giriş Yap</h2>
-        <input type="text" id="username" placeholder="Kullanıcı Adı">
-        <input type="password" id="password" placeholder="Şifre">
-        <button onclick="handleAuth()">Giriş Yap</button>
-        <p style="text-align: center; font-size: 14px; margin-top: 10px;">
-            <a href="#" id="toggle-auth" onclick="toggleAuthMode()" style="color: #38bdf8; text-decoration: none;">Hesabın yok mu? Kayıt Ol</a>
-        </p>
+    <div id="app-title" class="card" style="padding: 16px; text-align: center;">
+        <h2 style="margin: 0;">💰 Finans Asistanım</h2>
     </div>
 
-    <!-- Portföy Paneli -->
-    <div id="portfolio-section" class="card hidden">
-        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 15px;">
-            <h2 style="margin: 0;">Portföyüm & Kâr/Zarar Durumu</h2>
-            <div class="header-actions">
-                <button class="btn-refresh" onclick="loadPortfolio()">🔄 Portföyü Güncelle / Getir</button>
-                <button onclick="logout()" style="width: auto; background: #475569;">Çıkış Yap</button>
-            </div>
+    <!-- GİRİŞ EKRANI -->
+    <div id="login-card" class="card">
+        <h2>Giriş Yap</h2>
+        <div id="login-msg" class="msg"></div>
+        <input type="text" id="login-username" placeholder="Kullanıcı Adı veya E-Posta">
+        <input type="password" id="login-password" placeholder="Şifre">
+        <button onclick="login()">Giriş Yap</button>
+        <div class="auth-toggle">
+            <span onclick="showCard('register-card')">Hesap Oluştur</span>
+            <span onclick="showCard('forgot-card')">Şifremi Unuttum</span>
+        </div>
+    </div>
+
+    <!-- KAYIT EKRANI -->
+    <div id="register-card" class="card hidden">
+        <h2>Kayıt Ol</h2>
+        <div id="reg-msg" class="msg"></div>
+        <input type="text" id="reg-username" placeholder="Kullanıcı Adı">
+        <input type="email" id="reg-email" placeholder="E-Posta Adresi">
+        <input type="password" id="reg-password" placeholder="Şifre">
+        <button onclick="register()">Kayıt Ol</button>
+        <div class="auth-toggle">
+            <span onclick="showCard('login-card')">Zaten hesabın var mı? Giriş Yap</span>
+        </div>
+    </div>
+
+    <!-- ŞİFREMİ UNUTTUM EKRANI -->
+    <div id="forgot-card" class="card hidden">
+        <h2>Şifre Sıfırlama</h2>
+        <p class="subtitle">E-posta adresinizi girin, sıfırlama bağlantısını gönderelim.</p>
+        <div id="forgot-msg" class="msg"></div>
+        <input type="email" id="forgot-email" placeholder="E-Posta Adresiniz">
+        <button onclick="forgotPassword()">Sıfırlama Bağlantısı Gönder</button>
+        <button class="secondary" onclick="showCard('login-card')">Geri Dön</button>
+    </div>
+
+    <!-- ANA PANEL (PORTFÖY & PROFİL) -->
+    <div id="main-card" class="card hidden">
+        <div class="nav-tabs">
+            <button id="tab-btn-portfolio" class="active" onclick="switchTab('portfolio')">Portföyüm</button>
+            <button id="tab-btn-profile" onclick="switchTab('profile')">Profilim</button>
         </div>
 
-        <div class="summary-box">
-            <div class="summary-item">
-                <label>Toplam Maliyet</label>
-                <span id="total-cost-val">0.00 ₺</span>
+        <!-- PORTFÖY SEKMESİ -->
+        <div id="tab-portfolio">
+            <div style="background: #0f172a; padding: 12px; border-radius: 8px; margin-bottom: 16px; border: 1px solid #334155;">
+                <h4 style="font-size: 0.85rem; color: #94a3b8;">VARLIK EKLE</h4>
+                <input type="text" id="asset-symbol" placeholder="Sembol (Örn: THYAO, Gram Altın, USD)" style="margin-top: 8px;">
+                <input type="number" id="asset-amount" step="any" placeholder="Adet / Miktar">
+                <input type="number" id="asset-price" step="any" placeholder="Maliyet / Alış Fiyatı (₺)">
+                <button onclick="addAsset()">Ekle</button>
             </div>
-            <div class="summary-item">
-                <label>Güncel Portföy Değeri</label>
-                <span id="total-value-val">0.00 ₺</span>
-            </div>
-            <div class="summary-item">
-                <label>Toplam Kâr / Zarar</label>
-                <span id="total-pl-val">0.00 ₺</span>
-            </div>
+
+            <h3>Varlıklarım</h3>
+            <div id="portfolio-list">Yükleniyor...</div>
+            <button class="secondary" style="margin-top: 16px;" onclick="logout()">Çıkış Yap</button>
         </div>
 
-        <h3>Yeni Varlık Ekle</h3>
-        <div class="form-group">
-            <input type="text" id="symbol" placeholder="Varlık (Örn: tuprs, altın, çeyrek altın, usd)">
-            <input type="number" id="amount" step="any" placeholder="Adet">
-            <input type="number" id="buy-price" step="any" placeholder="Ort. Alış Fiyatı (₺)">
-            <button onclick="addAsset()">Ekle</button>
+        <!-- PROFİL SEKMESİ -->
+        <div id="tab-profile" class="hidden">
+            <div style="text-align: center; margin-bottom: 20px;">
+                <div style="font-size: 3rem; margin-bottom: 8px;">👤</div>
+                <h3 id="profile-username">-</h3>
+                <p id="profile-email" style="color: #94a3b8; font-size: 0.9rem;">-</p>
+            </div>
+            <div style="background: #0f172a; padding: 12px; border-radius: 8px; margin-bottom: 16px; border: 1px solid #334155;">
+                <p style="font-size: 0.85rem; color: #94a3b8;">E-posta Doğrulama Durumu:</p>
+                <p id="profile-status" style="font-weight: bold; margin-top: 4px;">-</p>
+            </div>
+            <button class="secondary" onclick="logout()">Çıkış Yap</button>
         </div>
-
-        <table>
-            <thead>
-                <tr>
-                    <th>Sembol</th>
-                    <th>Adet</th>
-                    <th>Ort. Alış</th>
-                    <th>Anlık Fiyat</th>
-                    <th>Güncel Değer</th>
-                    <th>Kâr / Zarar</th>
-                    <th>İşlem</th>
-                </tr>
-            </thead>
-            <tbody id="portfolio-list">
-                <!-- Veriler JS ile doldurulacak -->
-            </tbody>
-        </table>
     </div>
 </div>
 
 <script>
-    // Service Worker Kaydı
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('/sw.js')
-                .then(reg => console.log('PWA Hazır:', reg.scope))
-                .catch(err => console.log('PWA Hata:', err));
+    const API_URL = ""; 
+
+    function showCard(cardId) {
+        document.querySelectorAll('.card').forEach(c => {
+            if(c.id !== 'app-title') c.classList.add('hidden');
         });
+        document.getElementById(cardId).classList.remove('hidden');
     }
 
-    // Site İçi Uygulama Yükleme Butonu Mantığı
-    let deferredPrompt;
-    const installBtn = document.getElementById('pwa-install-btn');
-
-    window.addEventListener('beforeinstallprompt', (e) => {
-        e.preventDefault();
-        deferredPrompt = e;
-        if (installBtn) installBtn.classList.remove('hidden');
-    });
-
-    async function installPWA() {
-        if (deferredPrompt) {
-            deferredPrompt.prompt();
-            const { outcome } = await deferredPrompt.userChoice;
-            if (outcome === 'accepted') {
-                console.log('Kullanıcı uygulamayı yükledi.');
-            }
-            deferredPrompt = null;
-            if (installBtn) installBtn.classList.add('hidden');
+    function switchTab(tab) {
+        if(tab === 'portfolio') {
+            document.getElementById('tab-portfolio').classList.remove('hidden');
+            document.getElementById('tab-profile').classList.add('hidden');
+            document.getElementById('tab-btn-portfolio').classList.add('active');
+            document.getElementById('tab-btn-profile').classList.remove('active');
         } else {
-            alert("iOS (iPhone) cihazlarda uygulamayı yüklemek için Safari'nin en altındaki Paylaş (kare ve yukarı ok) simgesine basıp 'Ana Ekrana Ekle' seçeneğine dokunun.");
+            document.getElementById('tab-portfolio').classList.add('hidden');
+            document.getElementById('tab-profile').classList.remove('hidden');
+            document.getElementById('tab-btn-portfolio').classList.remove('active');
+            document.getElementById('tab-btn-profile').classList.add('active');
+            loadProfile();
         }
     }
 
-    let isLogin = true;
+    function getToken() { return localStorage.getItem('token'); }
+    function setToken(token) { localStorage.setItem('token', token); }
 
-    window.onload = function() {
-        const token = localStorage.getItem("access_token");
-        if (token) {
-            showPortfolio();
-        }
-    };
+    async function register() {
+        const username = document.getElementById('reg-username').value;
+        const email = document.getElementById('reg-email').value;
+        const password = document.getElementById('reg-password').value;
+        const msg = document.getElementById('reg-msg');
 
-    function toggleAuthMode() {
-        isLogin = !isLogin;
-        document.getElementById("form-title").innerText = isLogin ? "Giriş Yap" : "Kayıt Ol";
-        document.getElementById("toggle-auth").innerText = isLogin ? "Hesabın yok mu? Kayıt Ol" : "Zaten hesabın var mı? Giriş Yap";
-    }
-
-    async function handleAuth() {
-        const username = document.getElementById("username").value;
-        const password = document.getElementById("password").value;
-        const endpoint = isLogin ? "/login" : "/register";
-
-        const response = await fetch(endpoint, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ username, password })
-        });
-
-        const data = await response.json();
-
-        if (response.ok) {
-            if (isLogin) {
-                localStorage.setItem("access_token", data.access_token);
-                showPortfolio();
-            } else {
-                alert("Kayıt başarılı! Şimdi giriş yapabilirsiniz.");
-                toggleAuthMode();
-            }
-        } else {
-            alert(data.detail || "Bir hata oluştu.");
+        try {
+            const res = await fetch(`${API_URL}/register`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({username, email, password})
+            });
+            const data = await res.json();
+            if(!res.ok) throw new Error(data.detail || "Kayıt başarısız.");
+            msg.className = "msg success";
+            msg.innerText = "Kayıt başarılı! Giriş yapabilirsiniz.";
+            setTimeout(() => showCard('login-card'), 1500);
+        } catch(e) {
+            msg.className = "msg error";
+            msg.innerText = e.message;
         }
     }
 
-    function logout() {
-        localStorage.removeItem("access_token");
-        document.getElementById("portfolio-section").classList.add("hidden");
-        document.getElementById("auth-section").classList.remove("hidden");
+    async function login() {
+        const username = document.getElementById('login-username').value;
+        const password = document.getElementById('login-password').value;
+        const msg = document.getElementById('login-msg');
+
+        try {
+            const res = await fetch(`${API_URL}/login`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({username, password})
+            });
+            const data = await res.json();
+            if(!res.ok) throw new Error(data.detail || "Giriş başarısız.");
+            setToken(data.access_token);
+            showCard('main-card');
+            loadPortfolio();
+        } catch(e) {
+            msg.className = "msg error";
+            msg.innerText = e.message;
+        }
     }
 
-    function showPortfolio() {
-        document.getElementById("auth-section").classList.add("hidden");
-        document.getElementById("portfolio-section").classList.remove("hidden");
-        loadPortfolio();
+    async function forgotPassword() {
+        const email = document.getElementById('forgot-email').value;
+        const msg = document.getElementById('forgot-msg');
+
+        try {
+            const res = await fetch(`${API_URL}/forgot-password`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({email})
+            });
+            const data = await res.json();
+            msg.className = "msg success";
+            msg.innerText = data.message;
+        } catch(e) {
+            msg.className = "msg error";
+            msg.innerText = "İşlem sırasında bir hata oluştu.";
+        }
     }
 
     async function loadPortfolio() {
-        const token = localStorage.getItem("access_token");
-        if (!token) {
+        const token = getToken();
+        if(!token) return showCard('login-card');
+
+        try {
+            const res = await fetch(`${API_URL}/portfolio?token=${token}`);
+            if(!res.ok) throw new Error("Oturum süresi dolmuş.");
+            const items = await res.json();
+            
+            const list = document.getElementById('portfolio-list');
+            if(items.length === 0) {
+                list.innerHTML = "<p style='text-align:center; color:#94a3b8; font-size:0.9rem;'>Henüz eklenmiş varlık yok.</p>";
+                return;
+            }
+
+            list.innerHTML = items.map(item => `
+                <div class="portfolio-item">
+                    <div class="item-info">
+                        <div class="item-title">${item.symbol}</div>
+                        <div class="item-sub">${item.amount} Adet | Maliyet: ₺${item.buy_price}</div>
+                        <div class="item-sub">Güncel: ₺${item.current_price} | Değer: ₺${item.current_value}</div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div class="${item.profit_loss >= 0 ? 'profit' : 'loss'}">
+                            ${item.profit_loss >= 0 ? '+' : ''}₺${item.profit_loss} (%${item.profit_loss_percent})
+                        </div>
+                        <button class="danger" style="margin-top: 6px;" onclick="deleteAsset(${item.id})">Sil</button>
+                    </div>
+                </div>
+            `).join('');
+        } catch(e) {
             logout();
-            return;
         }
-
-        const response = await fetch(`/portfolio?token=${token}`);
-        if (!response.ok) {
-            alert("Oturum süresi doldu, lütfen tekrar giriş yapın.");
-            logout();
-            return;
-        }
-
-        const data = await response.json();
-        const list = document.getElementById("portfolio-list");
-        list.innerHTML = "";
-
-        let grandTotalCost = 0;
-        let grandTotalValue = 0;
-
-        data.forEach(item => {
-            grandTotalCost += item.total_cost;
-            grandTotalValue += item.current_value;
-
-            const isProfitable = item.profit_loss >= 0;
-            const plClass = isProfitable ? "profit" : "loss";
-            const plSign = isProfitable ? "+" : "";
-
-            list.innerHTML += `
-                <tr>
-                    <td><b>${item.symbol}</b></td>
-                    <td>${item.amount}</td>
-                    <td>${item.buy_price.toFixed(2)} ₺</td>
-                    <td>${item.current_price.toFixed(2)} ₺</td>
-                    <td>${item.current_value.toFixed(2)} ₺</td>
-                    <td class="${plClass}">${plSign}${item.profit_loss.toFixed(2)} ₺ (%${item.profit_loss_percent})</td>
-                    <td><button class="btn-delete" onclick="deleteAsset(${item.id})">Sil</button></td>
-                </tr>
-            `;
-        });
-
-        const totalPL = grandTotalValue - grandTotalCost;
-        const totalPLClass = totalPL >= 0 ? "profit" : "loss";
-
-        document.getElementById("total-cost-val").innerText = grandTotalCost.toFixed(2) + " ₺";
-        document.getElementById("total-value-val").innerText = grandTotalValue.toFixed(2) + " ₺";
-        
-        const totalPLSpan = document.getElementById("total-pl-val");
-        totalPLSpan.innerText = (totalPL >= 0 ? "+" : "") + totalPL.toFixed(2) + " ₺";
-        totalPLSpan.className = totalPLClass;
     }
 
     async function addAsset() {
-        const token = localStorage.getItem("access_token");
-        const symbol = document.getElementById("symbol").value;
-        const amount = parseFloat(document.getElementById("amount").value);
-        const buy_price = parseFloat(document.getElementById("buy-price").value) || 0.0;
+        const token = getToken();
+        const symbol = document.getElementById('asset-symbol').value;
+        const amount = parseFloat(document.getElementById('asset-amount').value);
+        const buy_price = parseFloat(document.getElementById('asset-price').value) || 0.0;
 
-        if (!symbol || isNaN(amount)) {
-            alert("Lütfen geçerli bir sembol ve adet girin.");
-            return;
-        }
+        if(!symbol || !amount) return alert("Lütfen sembol ve miktar alanlarını doldurun.");
 
-        await fetch(`/portfolio/add?token=${token}`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ symbol, amount, buy_price })
+        await fetch(`${API_URL}/portfolio/add?token=${token}`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({symbol, amount, buy_price})
         });
 
-        document.getElementById("symbol").value = "";
-        document.getElementById("amount").value = "";
-        document.getElementById("buy-price").value = "";
+        document.getElementById('asset-symbol').value = '';
+        document.getElementById('asset-amount').value = '';
+        document.getElementById('asset-price').value = '';
         loadPortfolio();
     }
 
     async function deleteAsset(id) {
-        const token = localStorage.getItem("access_token");
-        await fetch(`/portfolio/delete/${id}?token=${token}`, { method: "DELETE" });
+        const token = getToken();
+        await fetch(`${API_URL}/portfolio/delete/${id}?token=${token}`, { method: 'DELETE' });
         loadPortfolio();
+    }
+
+    async function loadProfile() {
+        const token = getToken();
+        try {
+            const res = await fetch(`${API_URL}/user/profile?token=${token}`);
+            const user = await res.json();
+            document.getElementById('profile-username').innerText = user.username;
+            document.getElementById('profile-email').innerText = user.email || "E-posta tanımlanmamış";
+            
+            const statusEl = document.getElementById('profile-status');
+            if(user.is_verified) {
+                statusEl.innerText = "✓ Doğrulanmış Hesap";
+                statusEl.style.color = "#22c55e";
+            } else {
+                statusEl.innerText = "⏳ Onay Bekliyor / Pasif";
+                statusEl.style.color = "#f59e0b";
+            }
+        } catch(e) {}
+    }
+
+    function logout() {
+        localStorage.removeItem('token');
+        showCard('login-card');
+    }
+
+    // Başlangıç Kontrolü
+    if(getToken()) {
+        showCard('main-card');
+        loadPortfolio();
+    } else {
+        showCard('login-card');
+    }
+
+    // PWA Service Worker Kaydı
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/sw.js').catch(() => {});
     }
 </script>
 

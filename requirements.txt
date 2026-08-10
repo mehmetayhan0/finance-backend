@@ -1,6 +1,6 @@
 fastapi
 uvicorn
 yfinance
-pyjwt
-passlib[bcrypt]
-python-jose[cryptography]
+python-jose
+psycopg2-binary
+pydantic

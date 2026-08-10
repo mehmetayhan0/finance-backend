@@ -76,6 +76,12 @@ def init_db():
             reset_token VARCHAR(255)
         );
     """)
+    
+    # Eksik sütunları var olan tabloya güvenle ekleyen migration komutları
+    cursor.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS email VARCHAR(255);")
+    cursor.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS is_verified BOOLEAN DEFAULT FALSE;")
+    cursor.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token VARCHAR(255);")
+
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS portfolio (
             id SERIAL PRIMARY KEY,

@@ -22,7 +22,7 @@
         button.secondary { background: transparent; color: #94a3b8; border: 1px solid #334155; }
         button.danger { background: #ef4444; color: #fff; width: auto; padding: 6px 12px; font-size: 0.85rem; }
         
-        /* İNDİR BUTONU STİLİ (SEÇENEK 1 İKONU İLE) */
+        /* MOBİL UYGULAMAYI İNDİR BUTON STİLİ */
         button.install-btn { 
             background: linear-gradient(135deg, #38bdf8 0%, #0284c7 100%); 
             color: #ffffff; 
@@ -42,7 +42,6 @@
         .nav-tabs button { margin-bottom: 0; background: #1e293b; color: #94a3b8; border: 1px solid #334155; }
         .nav-tabs button.active { background: #38bdf8; color: #0f172a; }
 
-        /* PORTFÖY ÖZET KARTLARI */
         .summary-card { background: #0f172a; border: 1px solid #334155; border-radius: 12px; padding: 16px; margin-bottom: 16px; text-align: center; }
         .summary-title { font-size: 0.8rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; }
         .summary-value { font-size: 1.6rem; font-weight: bold; margin: 4px 0; color: #f8fafc; }
@@ -67,8 +66,8 @@
     <div id="app-title" class="card" style="padding: 16px; text-align: center;">
         <h2 style="margin: 0;">💰 Finansım</h2>
         
-        <!-- MOBİL UYGULAMAYI İNDİR BUTONU (SEÇENEK 1) -->
-        <button id="install-pwa-btn" class="install-btn hidden" onclick="installApp()">
+        <!-- MOBİL UYGULAMAYI İNDİR BUTONU (HER ZAMAN GÖRÜNÜR) -->
+        <button id="install-pwa-btn" class="install-btn" onclick="installApp()">
             <span style="font-size: 1.2rem;">📲</span> Mobil Uygulamayı İndir
         </button>
     </div>
@@ -165,24 +164,22 @@
 <script>
     const API_URL = ""; 
 
-    // PWA İNDİRME MANTIĞI
+    // PWA YÜKLEME MANTIĞI (HER CİHAZA UYGUN GÜVENLİ YÜKLEME)
     let deferredPrompt;
-    const installBtn = document.getElementById('install-pwa-btn');
 
     window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault();
         deferredPrompt = e;
-        installBtn.classList.remove('hidden');
     });
 
     async function installApp() {
-        if (!deferredPrompt) return;
-        deferredPrompt.prompt();
-        const { outcome } = await deferredPrompt.userChoice;
-        if (outcome === 'accepted') {
-            installBtn.classList.add('hidden');
+        if (deferredPrompt) {
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            deferredPrompt = null;
+        } else {
+            alert("Uygulamayı telefonunuza indirmek için:\n\n• Android / Chrome kullanıyorsanız: Sağ üstteki 3 noktaya basıp 'Ana ekrana ekle' veya 'Uygulamayı yükle' seçeneğine tıklayın.\n\n• iPhone / Safari kullanıyorsanız: Ekranın altındaki Paylaş (kutu üzerinde ok) simgesine basıp 'Ana Ekrana Ekle' seçeneğini seçin.");
         }
-        deferredPrompt = null;
     }
 
     function showCard(cardId) {
@@ -388,6 +385,7 @@
         showCard('login-card');
     }
 
+    // Service Worker Kaydı
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('/sw.js').catch(() => {});
     }

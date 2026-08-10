@@ -154,8 +154,8 @@
 
         /* GİRİŞ & KAYIT OL PANELİ */
         .auth-container {
-            max-width: 420px;
-            margin: 40px auto;
+            max-width: 440px;
+            margin: 30px auto;
         }
 
         .auth-tabs {
@@ -373,11 +373,19 @@
             <button type="submit" class="btn btn-primary">Giriş Yap</button>
         </form>
 
-        <!-- KAYIT OL FORMU -->
+        <!-- KAYIT OL FORMU (GÜNCELLENDİ) -->
         <form class="auth-form" id="register-form" style="display: none;" onsubmit="handleRegister(event)">
             <div class="form-group">
                 <label>Kullanıcı Adı</label>
                 <input type="text" id="reg-username" placeholder="Kullanıcı adı belirleyin" required autocomplete="username">
+            </div>
+            <div class="form-group">
+                <label>E-posta Adresi</label>
+                <input type="email" id="reg-email" placeholder="ornek@email.com" required autocomplete="email">
+            </div>
+            <div class="form-group">
+                <label>Telefon Numarası</label>
+                <input type="tel" id="reg-phone" placeholder="05XX XXX XX XX" required autocomplete="tel">
             </div>
             <div class="form-group">
                 <label>Şifre</label>
@@ -494,6 +502,8 @@
         function handleRegister(e) {
             e.preventDefault();
             const username = document.getElementById('reg-username').value.trim().toLowerCase();
+            const email = document.getElementById('reg-email').value.trim().toLowerCase();
+            const phone = document.getElementById('reg-phone').value.trim();
             const password = document.getElementById('reg-password').value;
             const passwordConfirm = document.getElementById('reg-password-confirm').value;
 
@@ -502,7 +512,7 @@
             errDiv.style.display = 'none';
             successDiv.style.display = 'none';
 
-            if (!username || !password) {
+            if (!username || !email || !phone || !password) {
                 errDiv.innerText = "Lütfen tüm alanları doldurun!";
                 errDiv.style.display = 'block';
                 return;
@@ -521,7 +531,20 @@
                 return;
             }
 
-            users.push({ username: username, password: password });
+            if (users.some(u => u.email === email)) {
+                errDiv.innerText = "Bu e-posta adresi zaten kayıtlı!";
+                errDiv.style.display = 'block';
+                return;
+            }
+
+            // Yeni kullanıcı bilgilerini kaydet
+            users.push({ 
+                username: username, 
+                email: email, 
+                phone: phone, 
+                password: password 
+            });
+            
             localStorage.setItem("finansim_users", JSON.stringify(users));
 
             successDiv.style.display = 'block';

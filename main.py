@@ -4,33 +4,47 @@ import os
 
 app = FastAPI()
 
-# Ana Sayfa
+# Sunucudaki projenin tam ana klasör yolu (Linux / Render Uyumlu)
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+# Ana Sayfa (index.html)
 @app.get("/", response_class=HTMLResponse)
 def read_root():
-    with open("index.html", "r", encoding="utf-8") as f:
+    index_path = os.path.join(BASE_DIR, "index.html")
+    with open(index_path, "r", encoding="utf-8") as f:
         return f.read()
 
-# Manifest ve Service Worker Servisleri
+# Manifest Servisi
 @app.get("/manifest.json")
 def get_manifest():
-    return FileResponse("manifest.json", media_type="application/json")
+    manifest_path = os.path.join(BASE_DIR, "manifest.json")
+    return FileResponse(manifest_path, media_type="application/json")
 
+# Service Worker Servisi
 @app.get("/sw.js")
 def get_sw():
-    return FileResponse("sw.js", media_type="application/javascript")
+    sw_path = os.path.join(BASE_DIR, "sw.js")
+    return FileResponse(sw_path, media_type="application/javascript")
 
-# APK İndirme Rotası (Güncellendi)
+# APK İndirme Rotası
 @app.get("/download-apk")
 def download_apk():
-    # Sunucudaki olası APK dosya adlarını kontrol et
-    possible_names = ["FinansAsistani.apk", "finansasistani.apk", "Finansım.apk"]
+    # Olası tüm isim çeşitlemelerini tam yol ile kontrol et
+    possible_names = ["FinansAsistani.apk", "finansasistani.apk", "Finansım.apk", "finansim.apk"]
     
-    for apk_name in possible_names:
-        if os.path.exists(apk_name):
+    for name in possible_names:
+        file_path = os.path.join(BASE_DIR, name)
+        if os.path.exists(file_path):
             return FileResponse(
-                path=apk_name, 
+                path=file_path, 
                 filename="FinansAsistani.apk", 
                 media_type="application/vnd.android.package-archive"
             )
             
-    return {"message": "APK dosyası henüz sunucuya yüklenmedi."}
+    # Eğer dosya halen bulunamazsa teşhis için sunucudaki mevcut dosyaları listeler
+    present_files = os.listdir(BASE_DIR)
+    return {
+        "status": "error",
+        "message": "APK dosyası sunucuda bulunamadı.",
+        "sunucudaki_mevcut_dosyalar": present_files
+    }

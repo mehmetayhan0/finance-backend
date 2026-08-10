@@ -11,8 +11,10 @@
         .card { background: #1e293b; padding: 20px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
         h2 { margin-top: 0; color: #38bdf8; }
         input, button { padding: 10px 14px; margin: 5px 0; border-radius: 6px; border: 1px solid #334155; background: #0f172a; color: white; width: 100%; }
-        button { background: #0284c7; cursor: pointer; border: none; font-weight: bold; }
+        button { background: #0284c7; cursor: pointer; border: none; font-weight: bold; transition: 0.2s; }
         button:hover { background: #0369a1; }
+        .btn-refresh { background: #10b981; width: auto; }
+        .btn-refresh:hover { background: #059669; }
         .form-group { display: flex; gap: 10px; flex-wrap: wrap; }
         .form-group input { flex: 1; min-width: 140px; }
         .form-group button { flex: 1; min-width: 120px; }
@@ -28,6 +30,7 @@
         .summary-item { text-align: center; }
         .summary-item label { font-size: 12px; color: #94a3b8; display: block; }
         .summary-item span { font-size: 18px; font-weight: bold; }
+        .header-actions { display: flex; gap: 10px; align-items: center; }
     </style>
 </head>
 <body>
@@ -46,9 +49,12 @@
 
     <!-- Portföy Paneli -->
     <div id="portfolio-section" class="card hidden">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-            <h2>Portföyüm & Kâr/Zarar Durumu</h2>
-            <button onclick="logout()" style="width: auto; background: #475569;">Çıkış Yap</button>
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 15px;">
+            <h2 style="margin: 0;">Portföyüm & Kâr/Zarar Durumu</h2>
+            <div class="header-actions">
+                <button class="btn-refresh" onclick="loadPortfolio()">🔄 Portföyü Güncelle / Getir</button>
+                <button onclick="logout()" style="width: auto; background: #475569;">Çıkış Yap</button>
+            </div>
         </div>
 
         <div class="summary-box">
@@ -68,7 +74,7 @@
 
         <h3>Yeni Varlık Ekle</h3>
         <div class="form-group">
-            <input type="text" id="symbol" placeholder="Sembol (Örn: THYAO.IS, USDTRY=X, AAPL)">
+            <input type="text" id="symbol" placeholder="Varlık (Örn: tuprs, altın, çeyrek altın, usd)">
             <input type="number" id="amount" step="any" placeholder="Adet">
             <input type="number" id="buy-price" step="any" placeholder="Ort. Alış Fiyatı (₺)">
             <button onclick="addAsset()">Ekle</button>
@@ -95,11 +101,14 @@
 
 <script>
     let isLogin = true;
-    let token = localStorage.getItem("access_token");
 
-    if (token) {
-        showPortfolio();
-    }
+    // Sayfa yüklendiğinde oturumu otomatik kontrol et
+    window.onload = function() {
+        const token = localStorage.getItem("access_token");
+        if (token) {
+            showPortfolio();
+        }
+    };
 
     function toggleAuthMode() {
         isLogin = !isLogin;
@@ -123,7 +132,6 @@
         if (response.ok) {
             if (isLogin) {
                 localStorage.setItem("access_token", data.access_token);
-                token = data.access_token;
                 showPortfolio();
             } else {
                 alert("Kayıt başarılı! Şimdi giriş yapabilirsiniz.");
@@ -136,7 +144,6 @@
 
     function logout() {
         localStorage.removeItem("access_token");
-        token = null;
         document.getElementById("portfolio-section").classList.add("hidden");
         document.getElementById("auth-section").classList.remove("hidden");
     }
@@ -148,8 +155,15 @@
     }
 
     async function loadPortfolio() {
+        const token = localStorage.getItem("access_token");
+        if (!token) {
+            logout();
+            return;
+        }
+
         const response = await fetch(`/portfolio?token=${token}`);
         if (!response.ok) {
+            alert("Oturum süresi doldu, lütfen tekrar giriş yapın.");
             logout();
             return;
         }
@@ -194,6 +208,7 @@
     }
 
     async function addAsset() {
+        const token = localStorage.getItem("access_token");
         const symbol = document.getElementById("symbol").value;
         const amount = parseFloat(document.getElementById("amount").value);
         const buy_price = parseFloat(document.getElementById("buy-price").value) || 0.0;
@@ -216,6 +231,7 @@
     }
 
     async function deleteAsset(id) {
+        const token = localStorage.getItem("access_token");
         await fetch(`/portfolio/delete/${id}?token=${token}`, { method: "DELETE" });
         loadPortfolio();
     }

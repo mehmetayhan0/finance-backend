@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Finans Asistanım</title>
+    <title>Finansım</title>
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#0f172a">
     <style>
@@ -22,7 +22,7 @@
         button.secondary { background: transparent; color: #94a3b8; border: 1px solid #334155; }
         button.danger { background: #ef4444; color: #fff; width: auto; padding: 6px 12px; font-size: 0.85rem; }
         
-        /* İNDİR BUTONU ÖZEL STİLİ */
+        /* İNDİR BUTONU STİLİ (SEÇENEK 1 İKONU İLE) */
         button.install-btn { 
             background: linear-gradient(135deg, #38bdf8 0%, #0284c7 100%); 
             color: #ffffff; 
@@ -65,9 +65,9 @@
 
 <div class="container">
     <div id="app-title" class="card" style="padding: 16px; text-align: center;">
-        <h2 style="margin: 0;">💰 Finans Asistanım</h2>
+        <h2 style="margin: 0;">💰 Finansım</h2>
         
-        <!-- MOBİL UYGULAMAYI İNDİR BUTONU -->
+        <!-- MOBİL UYGULAMAYI İNDİR BUTONU (SEÇENEK 1) -->
         <button id="install-pwa-btn" class="install-btn hidden" onclick="installApp()">
             <span style="font-size: 1.2rem;">📲</span> Mobil Uygulamayı İndir
         </button>
@@ -165,7 +165,7 @@
 <script>
     const API_URL = ""; 
 
-    // PWA YÜKLEME MANTIĞI
+    // PWA İNDİRME MANTIĞI
     let deferredPrompt;
     const installBtn = document.getElementById('install-pwa-btn');
 

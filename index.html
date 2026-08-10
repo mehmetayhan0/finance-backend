@@ -20,6 +20,8 @@
         input, button { padding: 10px 14px; margin: 5px 0; border-radius: 6px; border: 1px solid #334155; background: #0f172a; color: white; width: 100%; }
         button { background: #0284c7; cursor: pointer; border: none; font-weight: bold; transition: 0.2s; }
         button:hover { background: #0369a1; }
+        .btn-install { background: #8b5cf6; font-size: 15px; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .btn-install:hover { background: #7c3aed; }
         .btn-refresh { background: #10b981; width: auto; }
         .btn-refresh:hover { background: #059669; }
         .form-group { display: flex; gap: 10px; flex-wrap: wrap; }
@@ -32,7 +34,7 @@
         .loss { color: #f87171; font-weight: bold; }
         .btn-delete { background: #ef4444; width: auto; padding: 6px 12px; font-size: 12px; }
         .btn-delete:hover { background: #dc2626; }
-        .hidden { display: none; }
+        .hidden { display: none !important; }
         .summary-box { display: flex; justify-content: space-between; background: #0f172a; padding: 15px; border-radius: 8px; margin-bottom: 15px; }
         .summary-item { text-align: center; }
         .summary-item label { font-size: 12px; color: #94a3b8; display: block; }
@@ -43,6 +45,11 @@
 <body>
 
 <div class="container">
+    <!-- Mobil Uygulamayı Yükle Butonu (Site İçi) -->
+    <button id="pwa-install-btn" class="btn-install hidden" onclick="installPWA()">
+        📲 Uygulamayı Telefona Yükle
+    </button>
+
     <!-- Giriş / Kayıt Formu -->
     <div id="auth-section" class="card">
         <h2 id="form-title">Giriş Yap</h2>
@@ -107,7 +114,7 @@
 </div>
 
 <script>
-    // Service Worker (Mobil Uygulama) Kaydı
+    // Service Worker Kaydı
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
             navigator.serviceWorker.register('/sw.js')
@@ -116,9 +123,32 @@
         });
     }
 
+    // Site İçi Uygulama Yükleme Butonu Mantığı
+    let deferredPrompt;
+    const installBtn = document.getElementById('pwa-install-btn');
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        if (installBtn) installBtn.classList.remove('hidden');
+    });
+
+    async function installPWA() {
+        if (deferredPrompt) {
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            if (outcome === 'accepted') {
+                console.log('Kullanıcı uygulamayı yükledi.');
+            }
+            deferredPrompt = null;
+            if (installBtn) installBtn.classList.add('hidden');
+        } else {
+            alert("iOS (iPhone) cihazlarda uygulamayı yüklemek için Safari'nin en altındaki Paylaş (kare ve yukarı ok) simgesine basıp 'Ana Ekrana Ekle' seçeneğine dokunun.");
+        }
+    }
+
     let isLogin = true;
 
-    // Sayfa yüklendiğinde oturumu otomatik kontrol et
     window.onload = function() {
         const token = localStorage.getItem("access_token");
         if (token) {

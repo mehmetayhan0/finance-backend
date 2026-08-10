@@ -28,6 +28,12 @@
         .nav-tabs button { margin-bottom: 0; background: #1e293b; color: #94a3b8; border: 1px solid #334155; }
         .nav-tabs button.active { background: #38bdf8; color: #0f172a; }
 
+        /* PORTFÖY ÖZET KARTLARI */
+        .summary-card { background: #0f172a; border: 1px solid #334155; border-radius: 12px; padding: 16px; margin-bottom: 16px; text-align: center; }
+        .summary-title { font-size: 0.8rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; }
+        .summary-value { font-size: 1.6rem; font-weight: bold; margin: 4px 0; color: #f8fafc; }
+        .summary-details { display: flex; justify-content: space-between; margin-top: 10px; padding-top: 10px; border-top: 1px solid #1e293b; font-size: 0.85rem; }
+
         .portfolio-item { background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 12px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
         .item-info { font-size: 0.95rem; }
         .item-title { font-weight: bold; color: #f8fafc; }
@@ -93,6 +99,25 @@
 
         <!-- PORTFÖY SEKMESİ -->
         <div id="tab-portfolio">
+            
+            <!-- PORTFÖY ÖZET ALANI -->
+            <div class="summary-card">
+                <div class="summary-title">TOPLAM PORTFÖY DEĞERİ</div>
+                <div id="total-portfolio-value" class="summary-value">₺0.00</div>
+                
+                <div class="summary-details">
+                    <div>
+                        <span style="color: #94a3b8;">Maliyet: </span>
+                        <strong id="total-cost-value">₺0.00</strong>
+                    </div>
+                    <div>
+                        <span style="color: #94a3b8;">Kar/Zarar: </span>
+                        <strong id="total-profit-value">₺0.00 (%0)</strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VARLIK EKLE -->
             <div style="background: #0f172a; padding: 12px; border-radius: 8px; margin-bottom: 16px; border: 1px solid #334155;">
                 <h4 style="font-size: 0.85rem; color: #94a3b8;">VARLIK EKLE</h4>
                 <input type="text" id="asset-symbol" placeholder="Sembol (Örn: THYAO, Gram Altın, USD)" style="margin-top: 8px;">
@@ -226,19 +251,43 @@
             const list = document.getElementById('portfolio-list');
             if(items.length === 0) {
                 list.innerHTML = "<p style='text-align:center; color:#94a3b8; font-size:0.9rem;'>Henüz eklenmiş varlık yok.</p>";
+                document.getElementById('total-portfolio-value').innerText = "₺0.00";
+                document.getElementById('total-cost-value').innerText = "₺0.00";
+                document.getElementById('total-profit-value').innerText = "₺0.00 (%0)";
                 return;
             }
 
+            // Toplam Portföy Hesabı
+            let totalValue = 0;
+            let totalCost = 0;
+
+            items.forEach(item => {
+                totalValue += item.current_value;
+                totalCost += item.total_cost;
+            });
+
+            const totalProfit = totalValue - totalCost;
+            const totalProfitPercent = totalCost > 0 ? ((totalProfit / totalCost) * 100).toFixed(2) : "0.00";
+
+            document.getElementById('total-portfolio-value').innerText = `₺${totalValue.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            document.getElementById('total-cost-value').innerText = `₺${totalCost.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            
+            const profitEl = document.getElementById('total-profit-value');
+            const sign = totalProfit >= 0 ? '+' : '';
+            profitEl.innerText = `${sign}₺${totalProfit.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2})} (%${totalProfitPercent})`;
+            profitEl.style.color = totalProfit >= 0 ? '#22c55e' : '#ef4444';
+
+            // Liste Oluşturma
             list.innerHTML = items.map(item => `
                 <div class="portfolio-item">
                     <div class="item-info">
                         <div class="item-title">${item.symbol}</div>
-                        <div class="item-sub">${item.amount} Adet | Maliyet: ₺${item.buy_price}</div>
-                        <div class="item-sub">Güncel: ₺${item.current_price} | Değer: ₺${item.current_value}</div>
+                        <div class="item-sub">${item.amount} Adet | Maliyet: ₺${item.buy_price.toLocaleString('tr-TR')}</div>
+                        <div class="item-sub">Güncel: ₺${item.current_price.toLocaleString('tr-TR')} | Değer: ₺${item.current_value.toLocaleString('tr-TR')}</div>
                     </div>
                     <div style="text-align: right;">
                         <div class="${item.profit_loss >= 0 ? 'profit' : 'loss'}">
-                            ${item.profit_loss >= 0 ? '+' : ''}₺${item.profit_loss} (%${item.profit_loss_percent})
+                            ${item.profit_loss >= 0 ? '+' : ''}₺${item.profit_loss.toLocaleString('tr-TR')} (%${item.profit_loss_percent})
                         </div>
                         <button class="danger" style="margin-top: 6px;" onclick="deleteAsset(${item.id})">Sil</button>
                     </div>
@@ -299,7 +348,6 @@
         showCard('login-card');
     }
 
-    // Başlangıç Kontrolü
     if(getToken()) {
         showCard('main-card');
         loadPortfolio();
@@ -307,7 +355,6 @@
         showCard('login-card');
     }
 
-    // PWA Service Worker Kaydı
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('/sw.js').catch(() => {});
     }

@@ -5,13 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mehmet'in Finans Asistanı</title>
     
-    <!-- PWA Manifest Tanımlaması -->
-    <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#0f172a">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Finansım">
-    
     <style>
         * {
             margin: 0;
@@ -28,7 +21,7 @@
             flex-direction: column;
         }
 
-        /* Üst Menü / Navbar */
+        /* Üst Menü */
         header {
             background-color: #1e293b;
             padding: 16px 24px;
@@ -47,8 +40,7 @@
             color: #38bdf8;
         }
 
-        .install-btn {
-            background: linear-gradient(135deg, #0284c7, #2563eb);
+        .btn {
             color: #ffffff;
             border: none;
             padding: 10px 18px;
@@ -57,17 +49,26 @@
             border-radius: 8px;
             cursor: pointer;
             transition: all 0.2s ease;
-            display: flex;
+            display: inline-flex;
             align-items: center;
             gap: 8px;
+            text-decoration: none;
         }
 
-        .install-btn:hover {
+        .btn-download {
+            background: linear-gradient(135deg, #0284c7, #2563eb);
+        }
+
+        .btn-update {
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+
+        .btn:hover {
             opacity: 0.9;
             transform: translateY(-1px);
         }
 
-        /* Ana Web İçeriği (Webden Kullanım Alanı) */
+        /* Ana İçerik */
         main {
             flex: 1;
             padding: 24px;
@@ -114,15 +115,14 @@
         <div class="brand">
             <span>📊</span> Mehmet'in Finans Asistanı
         </div>
-        <!-- Uygulamayı İndir / Yükle Butonu -->
-        <button id="pwaInstallBtn" class="install-btn" onclick="installPWA()">
-            📲 Uygulamayı Yükle
-        </button>
+        
+        <!-- Dinamik Buton Alanı (JS Tarafından Yönetilir) -->
+        <div id="actionButtonContainer"></div>
     </header>
 
     <main>
-        <div id="webNotice" class="status-banner">
-            🌐 Şu an web sürümündesiniz. İsterseniz yukarıdaki **"Uygulamayı Yükle"** butonundan cihazınıza yükleyebilirsiniz.
+        <div id="statusNotice" class="status-banner">
+            İçerik yükleniyor...
         </div>
 
         <div class="card">
@@ -132,49 +132,46 @@
 
         <div class="card">
             <h2>Aylık Gelir / Gider Özeti</h2>
-            <p style="color: #94a3b8; font-size: 14px; margin-top: 8px;">Finansal verileriniz yükleniyor...</p>
+            <p style="color: #94a3b8; font-size: 14px; margin-top: 8px;">Finansal verileriniz senkronize ediliyor...</p>
         </div>
     </main>
 
     <script>
-        let deferredPrompt = null;
-        const installBtn = document.getElementById('pwaInstallBtn');
+        // Kullanıcının Web'den mi yoksa Yüklü Uygulamadan mı girdiğini tespit et
+        const isAppMode = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true || navigator.userAgent.includes('FinansApp');
 
-        // Service Worker Kaydı (PWA için Zorunlu)
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js').catch(err => console.log('SW Hata:', err));
-            });
+        const buttonContainer = document.getElementById('actionButtonContainer');
+        const statusNotice = document.getElementById('statusNotice');
+
+        if (isAppMode) {
+            // UYGULAMA İÇİNDEN GİRİLDİYSE: Güncelle Butonu Göster
+            statusNotice.innerHTML = "📱 **Uygulama Modundasınız.** Tüm güncellemeler anlık olarak senkronize edilir.";
+            
+            buttonContainer.innerHTML = `
+                <button class="btn btn-update" onclick="forceAppUpdate()">
+                    🔄 Güncellemeyi Denetle
+                </button>
+            `;
+        } else {
+            // TARAYICIDAN GİRİLDİYSE: Doğrudan APK İndir / Yükle Butonu Göster
+            statusNotice.innerHTML = "🌐 **Web Sürümündesiniz.** Dilerseniz uygulamayı telefonunuza APK olarak indirebilirsiniz.";
+            
+            // Timestamp ekleyerek tarayıcı indirme engelini aşıyoruz
+            const downloadUrl = "/download-apk?t=" + new Date().getTime();
+            
+            buttonContainer.innerHTML = `
+                <a href="${downloadUrl}" class="btn btn-download">
+                    📲 APK Uygulamasını İndir
+                </a>
+            `;
         }
 
-        // Tarayıcı yükleme imkanı sunduğunda olayı yakala
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-            installBtn.style.display = 'flex'; // Butonu görünür kıl
-        });
-
-        function installPWA() {
-            if (deferredPrompt) {
-                // Eğer tarayıcı yüklemeye hazırsa pencereyi aç
-                deferredPrompt.prompt();
-                deferredPrompt.userChoice.then((choiceResult) => {
-                    if (choiceResult.outcome === 'accepted') {
-                        console.log('Kullanıcı uygulamayı yükledi.');
-                    }
-                    deferredPrompt = null;
-                });
-            } else {
-                // Eğer uygulama zaten yüklüyse veya tarayıcı desteği yoksa bilgilendir
-                alert("Uygulama zaten cihazınızda yüklü olabilir veya tarayıcınız otomatik yüklemeyi desteklemiyor.\n\nChrome/Safari kullanıyorsanız menüden 'Ana Ekrana Ekle' veya 'Uygulamayı Yükle' seçeneğini kullanabilirsiniz.");
-            }
+        // Uygulama içi güncelleme kontrolü
+        function forceAppUpdate() {
+            // Sayfayı sunucudan en güncel haliyle yeniden yükler
+            window.location.reload(true);
+            alert("Uygulama en güncel sürüme yenilendi!");
         }
-
-        // Uygulama yüklendikten sonra tetiklenir
-        window.addEventListener('appinstalled', () => {
-            deferredPrompt = null;
-            alert("Mehmet'in Finans Asistanı başarıyla cihazınıza yüklendi!");
-        });
     </script>
 </body>
 </html>

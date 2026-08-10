@@ -59,6 +59,19 @@
         .msg.error { color: #ef4444; }
         .msg.success { color: #22c55e; }
     </style>
+    <script>
+        // HTTPS Zorunluluğu Kontrolü
+        if (location.protocol !== 'https:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
+            location.replace(`https:${location.href.substring(location.protocol.length)}`);
+        }
+
+        // PWA Kurulum Olayını Önceden Yakalama
+        window.deferredPrompt = null;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            window.deferredPrompt = e;
+        });
+    </script>
 </head>
 <body>
 
@@ -67,7 +80,7 @@
         <h2 style="margin: 0;">💰 Finansım</h2>
         
         <!-- MOBİL UYGULAMAYI İNDİR BUTONU -->
-        <button id="install-pwa-btn" class="install-btn hidden" onclick="installApp()">
+        <button id="install-pwa-btn" class="install-btn" onclick="installApp()">
             <span style="font-size: 1.2rem;">📲</span> Mobil Uygulamayı İndir
         </button>
     </div>
@@ -164,25 +177,20 @@
 <script>
     const API_URL = ""; 
 
-    // DİREKT İNDİRME MANTIĞI
-    let deferredPrompt;
-    const installBtn = document.getElementById('install-pwa-btn');
-
-    window.addEventListener('beforeinstallprompt', (e) => {
-        e.preventDefault();
-        deferredPrompt = e;
-        if (installBtn) {
-            installBtn.classList.remove('hidden');
-        }
-    });
-
+    // PWA İNDİRME FONKSİYONU
     async function installApp() {
-        if (!deferredPrompt) return;
-        deferredPrompt.prompt();
-        const { outcome } = await deferredPrompt.userChoice;
-        if (outcome === 'accepted') {
-            deferredPrompt = null;
-            if (installBtn) installBtn.classList.add('hidden');
+        if (window.deferredPrompt) {
+            // Tarayıcının orijinal yükleme penceresini aç
+            window.deferredPrompt.prompt();
+            const { outcome } = await window.deferredPrompt.userChoice;
+            if (outcome === 'accepted') {
+                window.deferredPrompt = null;
+                const installBtn = document.getElementById('install-pwa-btn');
+                if (installBtn) installBtn.classList.add('hidden');
+            }
+        } else {
+            // Tarayıcı olayı yakalayamadıysa kullanıcıyı bilgilendir
+            alert("Uygulama zaten cihazınızda yüklü olabilir veya tarayıcınız otomatik yüklemeyi henüz hazır hale getirmedi. Chrome kullanıyorsanız sağ üstteki 3 noktadan 'Uygulamayı Yükle' seçeneğini deneyebilirsiniz.");
         }
     }
 
@@ -389,7 +397,7 @@
         showCard('login-card');
     }
 
-    // Service Worker Kaydı (Göreceli Yol)
+    // Service Worker Kaydı
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('sw.js').catch(() => {});
     }

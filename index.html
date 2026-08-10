@@ -21,6 +21,20 @@
         button:hover { background: #0284c7; color: #fff; }
         button.secondary { background: transparent; color: #94a3b8; border: 1px solid #334155; }
         button.danger { background: #ef4444; color: #fff; width: auto; padding: 6px 12px; font-size: 0.85rem; }
+        
+        /* İNDİR BUTONU ÖZEL STİLİ */
+        button.install-btn { 
+            background: linear-gradient(135deg, #38bdf8 0%, #0284c7 100%); 
+            color: #ffffff; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            gap: 8px; 
+            font-size: 0.95rem;
+            padding: 14px;
+            box-shadow: 0 4px 12px rgba(56, 189, 248, 0.25);
+            margin-top: 12px;
+        }
 
         .auth-toggle { display: flex; justify-content: space-around; margin-top: 10px; font-size: 0.9rem; color: #38bdf8; cursor: pointer; text-decoration: underline; }
         
@@ -52,6 +66,11 @@
 <div class="container">
     <div id="app-title" class="card" style="padding: 16px; text-align: center;">
         <h2 style="margin: 0;">💰 Finans Asistanım</h2>
+        
+        <!-- MOBİL UYGULAMAYI İNDİR BUTONU -->
+        <button id="install-pwa-btn" class="install-btn hidden" onclick="installApp()">
+            <span style="font-size: 1.2rem;">📲</span> Mobil Uygulamayı İndir
+        </button>
     </div>
 
     <!-- GİRİŞ EKRANI -->
@@ -99,12 +118,9 @@
 
         <!-- PORTFÖY SEKMESİ -->
         <div id="tab-portfolio">
-            
-            <!-- PORTFÖY ÖZET ALANI -->
             <div class="summary-card">
                 <div class="summary-title">TOPLAM PORTFÖY DEĞERİ</div>
                 <div id="total-portfolio-value" class="summary-value">₺0.00</div>
-                
                 <div class="summary-details">
                     <div>
                         <span style="color: #94a3b8;">Maliyet: </span>
@@ -117,7 +133,6 @@
                 </div>
             </div>
 
-            <!-- VARLIK EKLE -->
             <div style="background: #0f172a; padding: 12px; border-radius: 8px; margin-bottom: 16px; border: 1px solid #334155;">
                 <h4 style="font-size: 0.85rem; color: #94a3b8;">VARLIK EKLE</h4>
                 <input type="text" id="asset-symbol" placeholder="Sembol (Örn: THYAO, Gram Altın, USD)" style="margin-top: 8px;">
@@ -149,6 +164,26 @@
 
 <script>
     const API_URL = ""; 
+
+    // PWA YÜKLEME MANTIĞI
+    let deferredPrompt;
+    const installBtn = document.getElementById('install-pwa-btn');
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        installBtn.classList.remove('hidden');
+    });
+
+    async function installApp() {
+        if (!deferredPrompt) return;
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        if (outcome === 'accepted') {
+            installBtn.classList.add('hidden');
+        }
+        deferredPrompt = null;
+    }
 
     function showCard(cardId) {
         document.querySelectorAll('.card').forEach(c => {
@@ -257,7 +292,6 @@
                 return;
             }
 
-            // Toplam Portföy Hesabı
             let totalValue = 0;
             let totalCost = 0;
 
@@ -277,7 +311,6 @@
             profitEl.innerText = `${sign}₺${totalProfit.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2})} (%${totalProfitPercent})`;
             profitEl.style.color = totalProfit >= 0 ? '#22c55e' : '#ef4444';
 
-            // Liste Oluşturma
             list.innerHTML = items.map(item => `
                 <div class="portfolio-item">
                     <div class="item-info">

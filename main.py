@@ -8,6 +8,10 @@ import yfinance as yf
 from jose import jwt, JWTError
 import hashlib
 import os
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+import uuid
 
 app = FastAPI()
 
@@ -22,8 +26,9 @@ app.add_middleware(
 SECRET_KEY = "finans_gizli_anahtar_degistirin"
 ALGORITHM = "HS256"
 
-# Render Environment Variable üzerinden veritabanı adresi çekilir
 DATABASE_URL = os.environ.get("DATABASE_URL")
+SMTP_EMAIL = os.environ.get("SMTP_EMAIL")
+SMTP_PASSWORD = os.environ.get("SMTP_PASSWORD")
 
 def get_db_connection():
     if DATABASE_URL:
@@ -37,6 +42,25 @@ def hash_password(password: str) -> str:
 def verify_password(password: str, hashed: str) -> bool:
     return hash_password(password) == hashed
 
+def send_email(to_email: str, subject: str, body_html: str):
+    if not SMTP_EMAIL or not SMTP_PASSWORD:
+        print("SMTP Bilgileri henüz girilmedi, e-posta gönderimi pasif.")
+        return False
+    try:
+        msg = MIMEMultipart("alternative")
+        msg["Subject"] = subject
+        msg["From"] = f"Finans Asistanım <{SMTP_EMAIL}>"
+        msg["To"] = to_email
+        msg.attach(MIMEText(body_html, "html"))
+
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+            server.login(SMTP_EMAIL, SMTP_PASSWORD)
+            server.sendmail(SMTP_EMAIL, to_email, msg.as_string())
+        return True
+    except Exception as e:
+        print("E-posta Gönderim Hatası:", e)
+        return False
+
 def init_db():
     if not DATABASE_URL:
         return
@@ -46,7 +70,10 @@ def init_db():
         CREATE TABLE IF NOT EXISTS users (
             id SERIAL PRIMARY KEY,
             username VARCHAR(255) UNIQUE NOT NULL,
-            password VARCHAR(255) NOT NULL
+            email VARCHAR(255) UNIQUE,
+            password VARCHAR(255) NOT NULL,
+            is_verified BOOLEAN DEFAULT FALSE,
+            reset_token VARCHAR(255)
         );
     """)
     cursor.execute("""
@@ -67,9 +94,21 @@ try:
 except Exception as e:
     print("DB Bağlantı Hatası:", e)
 
-class UserAuth(BaseModel):
+class UserRegister(BaseModel):
+    username: str
+    email: str
+    password: str
+
+class UserLogin(BaseModel):
     username: str
     password: str
+
+class ResetRequest(BaseModel):
+    email: str
+
+class ResetPassword(BaseModel):
+    token: str
+    new_password: str
 
 class Asset(BaseModel):
     symbol: str
@@ -81,13 +120,6 @@ def get_live_gram_gold_price():
         price = yf.Ticker("GAUTRY=X").fast_info.last_price
         if price and price > 0:
             return float(price)
-    except:
-        pass
-    try:
-        ons = yf.Ticker("GC=F").fast_info.last_price
-        usd = yf.Ticker("USDTRY=X").fast_info.last_price
-        if ons and usd:
-            return float((ons * usd) / 31.1034768)
     except:
         pass
     return None
@@ -116,28 +148,30 @@ def resolve_asset_details(symbol_input: str):
     return raw_upper, 1.0, raw_upper
 
 @app.post("/register")
-def register(user: UserAuth):
-    if not user.username or not user.password:
-        raise HTTPException(status_code=400, detail="Kullanıcı adı ve şifre gereklidir.")
+def register(user: UserRegister):
+    if not user.username or not user.password or not user.email:
+        raise HTTPException(status_code=400, detail="Kullanıcı adı, e-posta ve şifre zorunludur.")
         
     conn = get_db_connection()
     cursor = conn.cursor()
     hashed_pwd = hash_password(user.password)
     try:
-        cursor.execute("INSERT INTO users (username, password) VALUES (%s, %s)", (user.username, hashed_pwd))
+        cursor.execute("INSERT INTO users (username, email, password) VALUES (%s, %s, %s)", 
+                       (user.username.strip(), user.email.strip().lower(), hashed_pwd))
         conn.commit()
     except psycopg2.IntegrityError:
         conn.close()
-        raise HTTPException(status_code=400, detail="Bu kullanıcı adı zaten alınmış.")
+        raise HTTPException(status_code=400, detail="Bu kullanıcı adı veya e-posta adresi zaten kullanımda.")
     cursor.close()
     conn.close()
     return {"message": "Kayıt başarılı!"}
 
 @app.post("/login")
-def login(user: UserAuth):
+def login(user: UserLogin):
     conn = get_db_connection()
     cursor = conn.cursor(cursor_factory=RealDictCursor)
-    cursor.execute("SELECT id, password FROM users WHERE username = %s", (user.username,))
+    cursor.execute("SELECT id, username, email, is_verified, password FROM users WHERE username = %s OR email = %s", 
+                   (user.username.strip(), user.username.strip().lower()))
     db_user = cursor.fetchone()
     cursor.close()
     conn.close()
@@ -145,7 +179,7 @@ def login(user: UserAuth):
     if not db_user or not verify_password(user.password, db_user['password']):
         raise HTTPException(status_code=400, detail="Hatalı kullanıcı adı veya şifre.")
     
-    token = jwt.encode({"user_id": db_user['id'], "username": user.username}, SECRET_KEY, algorithm=ALGORITHM)
+    token = jwt.encode({"user_id": db_user['id'], "username": db_user['username']}, SECRET_KEY, algorithm=ALGORITHM)
     return {"access_token": token, "token_type": "bearer"}
 
 def get_current_user(token: str):
@@ -154,6 +188,56 @@ def get_current_user(token: str):
         return payload["user_id"]
     except JWTError:
         raise HTTPException(status_code=401, detail="Geçersiz oturum.")
+
+@app.get("/user/profile")
+def get_user_profile(token: str):
+    user_id = get_current_user(token)
+    conn = get_db_connection()
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
+    cursor.execute("SELECT username, email, is_verified FROM users WHERE id = %s", (user_id,))
+    user = cursor.fetchone()
+    cursor.close()
+    conn.close()
+    return user
+
+@app.post("/forgot-password")
+def forgot_password(req: ResetRequest):
+    conn = get_db_connection()
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
+    cursor.execute("SELECT id, username, email FROM users WHERE email = %s", (req.email.strip().lower(),))
+    user = cursor.fetchone()
+    
+    if not user:
+        cursor.close()
+        conn.close()
+        return {"message": "Eğer e-posta adresi kayıtlıysa sıfırlama bağlantısı gönderildi."}
+    
+    reset_token = str(uuid.uuid4())
+    cursor.execute("UPDATE users SET reset_token = %s WHERE id = %s", (reset_token, user['id']))
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+    return {"message": "Şifre sıfırlama talebiniz alındı."}
+
+@app.post("/reset-password")
+def reset_password(req: ResetPassword):
+    conn = get_db_connection()
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
+    cursor.execute("SELECT id FROM users WHERE reset_token = %s", (req.token,))
+    user = cursor.fetchone()
+    
+    if not user:
+        cursor.close()
+        conn.close()
+        raise HTTPException(status_code=400, detail="Geçersiz veya süresi dolmuş bağlantı.")
+    
+    new_hashed = hash_password(req.new_password)
+    cursor.execute("UPDATE users SET password = %s, reset_token = NULL WHERE id = %s", (new_hashed, user['id']))
+    conn.commit()
+    cursor.close()
+    conn.close()
+    return {"message": "Şifreniz başarıyla güncellendi! Giriş yapabilirsiniz."}
 
 @app.get("/portfolio")
 def get_portfolio(token: str):

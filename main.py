@@ -14,7 +14,7 @@ def read_root():
     with open(index_path, "r", encoding="utf-8") as f:
         return f.read()
 
-# Manifest Servisi (PWABuilder İçin)
+# Manifest Servisi
 @app.get("/manifest.json")
 def get_manifest():
     manifest_path = os.path.join(BASE_DIR, "manifest.json")
@@ -29,8 +29,9 @@ def get_sw():
 # APK İndirme Rotası
 @app.get("/download-apk")
 def download_apk():
-    # GitHub ve sunucudaki olası tüm büyük/küçük harf ve Türkçe karakter çeşitlemeleri
+    # Sunucudaki birebir noktalı "İ" içeren isim en başa eklendi: "FİnansAsistani.apk"
     possible_names = [
+        "FİnansAsistani.apk",
         "FinansAsistani.apk",
         "Finansasistani.apk",
         "FinansAsistanı.apk",
@@ -49,7 +50,6 @@ def download_apk():
                 media_type="application/vnd.android.package-archive"
             )
             
-    # Eğer hiçbir isimle eşleşme sağlanamazsa sunucudaki mevcut dosyaları listeler
     present_files = os.listdir(BASE_DIR)
     return {
         "status": "error",

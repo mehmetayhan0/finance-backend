@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Finansım - Anlık Portföy ve Piyasa Takibi</title>
+    <title>Finansım - Anlık Canlı Portföy Takibi</title>
     
     <style>
         * {
@@ -20,7 +20,7 @@
             user-select: none;
         }
 
-        /* 1. EN ÜSTTE SAĞDAN SOLA KAYAN BIST HİSSE BANTI */
+        /* 1. EN ÜSTTE SAĞDAN SOLA KAYAN CANLI BANT */
         .ticker-wrap {
             width: 100%;
             background-color: #020617;
@@ -37,12 +37,10 @@
         .ticker {
             display: flex;
             white-space: nowrap;
-            animation: marquee 25s linear infinite;
+            animation: marquee 30s linear infinite;
         }
 
-        .ticker:hover {
-            animation-play-state: paused; /* Üzerine gelince durur */
-        }
+        .ticker:hover { animation-play-state: paused; }
 
         @keyframes marquee {
             0% { transform: translateX(0); }
@@ -61,7 +59,7 @@
         .up { color: #22c55e; }
         .down { color: #ef4444; }
 
-        /* 2. SABİT DÖVİZ VE KIYMETLİ MADEN BANTI */
+        /* 2. SABİT CANLI PİYASA KARTLARI */
         .fixed-market-bar {
             background: #1e293b;
             padding: 12px 16px;
@@ -78,7 +76,7 @@
             border: 1px solid #334155;
             border-radius: 10px;
             padding: 8px 14px;
-            min-width: 110px;
+            min-width: 120px;
             text-align: center;
         }
 
@@ -91,7 +89,7 @@
 
         .market-card strong {
             font-size: 14px;
-            color: #f8fafc;
+            color: #38bdf8;
         }
 
         /* KAPSAYICI VE DİĞER STİLLER */
@@ -104,7 +102,7 @@
 
         .app-container {
             width: 100%;
-            max-width: 900px;
+            max-width: 1000px;
             margin: auto;
             padding: 16px;
             display: none;
@@ -173,41 +171,42 @@
 </head>
 <body>
 
-    <!-- 1. EN ÜSTTE KAYAN POPÜLER HİSSE BANTI (MARQUEE TICKER) -->
+    <!-- 1. EN ÜSTTE KAYAN CANLI PİYASA BANTI -->
     <div class="ticker-wrap">
         <div class="ticker" id="stock-ticker">
-            <!-- JavaScript ile Dinamik Doldurulur -->
-            <div class="ticker-item"><span>THYAO:</span> <strong>₺305.50</strong> <span class="up">▲ %1.85</span></div>
-            <div class="ticker-item"><span>GARAN:</span> <strong>₺112.20</strong> <span class="up">▲ %0.90</span></div>
-            <div class="ticker-item"><span>EREGL:</span> <strong>₺52.10</strong> <span class="down">▼ %1.15</span></div>
-            <div class="ticker-item"><span>AKBNK:</span> <strong>₺58.40</strong> <span class="up">▲ %2.10</span></div>
-            <div class="ticker-item"><span>SASA:</span> <strong>₺44.30</strong> <span class="down">▼ %0.45</span></div>
-            <div class="ticker-item"><span>BIST100:</span> <strong>9,850.10</strong> <span class="up">▲ %1.12</span></div>
-            <!-- Kesintisiz kayma için döngü tekrarı -->
-            <div class="ticker-item"><span>THYAO:</span> <strong>₺305.50</strong> <span class="up">▲ %1.85</span></div>
-            <div class="ticker-item"><span>GARAN:</span> <strong>₺112.20</strong> <span class="up">▲ %0.90</span></div>
-            <div class="ticker-item"><span>EREGL:</span> <strong>₺52.10</strong> <span class="down">▼ %1.15</span></div>
-            <div class="ticker-item"><span>AKBNK:</span> <strong>₺58.40</strong> <span class="up">▲ %2.10</span></div>
+            <div class="ticker-item"><span>💵 USD/TRY:</span> <strong id="tick-usd">Yükleniyor...</strong></div>
+            <div class="ticker-item"><span>💶 EUR/TRY:</span> <strong id="tick-eur">Yükleniyor...</strong></div>
+            <div class="ticker-item"><span>🥇 GRAM ALTIN:</span> <strong id="tick-altin">Yükleniyor...</strong></div>
+            <div class="ticker-item"><span>🥈 GÜMÜŞ:</span> <strong id="tick-gumus">Yükleniyor...</strong></div>
+            <div class="ticker-item"><span>₿ BTC/USDT:</span> <strong id="tick-btc">Yükleniyor...</strong></div>
+            <!-- Tekrar Döngüsü -->
+            <div class="ticker-item"><span>💵 USD/TRY:</span> <strong id="tick-usd2">Yükleniyor...</strong></div>
+            <div class="ticker-item"><span>💶 EUR/TRY:</span> <strong id="tick-eur2">Yükleniyor...</strong></div>
+            <div class="ticker-item"><span>🥇 GRAM ALTIN:</span> <strong id="tick-altin2">Yükleniyor...</strong></div>
         </div>
     </div>
 
-    <!-- 2. SABİT DÖVİZ VE KIYMETLİ MADEN KARTLARI BANTI -->
+    <!-- 2. SABİT CANLI PİYASA KARTLARI -->
     <div class="fixed-market-bar">
         <div class="market-card">
             <small>💵 DOLAR (USD)</small>
-            <strong id="val-usd">₺33.50</strong>
+            <strong id="val-usd">₺--.--</strong>
         </div>
         <div class="market-card">
             <small>💶 EURO (EUR)</small>
-            <strong id="val-eur">₺36.40</strong>
+            <strong id="val-eur">₺--.--</strong>
         </div>
         <div class="market-card">
             <small>🥇 GRAM ALTIN</small>
-            <strong id="val-altin">₺2,550</strong>
+            <strong id="val-altin">₺--.--</strong>
         </div>
         <div class="market-card">
             <small>🥈 GÜMÜŞ</small>
-            <strong id="val-gumus">₺31.20</strong>
+            <strong id="val-gumus">₺--.--</strong>
+        </div>
+        <div class="market-card">
+            <small>₿ BITCOIN (BTC)</small>
+            <strong id="val-btc">$--.--</strong>
         </div>
     </div>
 
@@ -274,16 +273,16 @@
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px;">
                     <div class="form-group">
                         <label>Varlık Türü</label>
-                        <select id="asset-type">
-                            <option value="hisse">Hisse Senedi</option>
-                            <option value="altin">Altın / Gümüş</option>
+                        <select id="asset-type" onchange="autoFillLivePrice()">
                             <option value="doviz">Döviz</option>
+                            <option value="altin">Altın / Gümüş</option>
                             <option value="kripto">Kripto Para</option>
+                            <option value="hisse">Hisse Senedi</option>
                         </select>
                     </div>
                     <div class="form-group">
                         <label>Varlık Kodu / Adı</label>
-                        <input type="text" id="asset-code" placeholder="Örn: THYAO, Gram Altın" required>
+                        <input type="text" id="asset-code" placeholder="Örn: USD, EUR, GRAM ALTIN, THYAO" oninput="autoFillLivePrice()" required>
                     </div>
                     <div class="form-group">
                         <label>Eldeki Adet</label>
@@ -291,11 +290,11 @@
                     </div>
                     <div class="form-group">
                         <label>Alış / Maliyet Fiyatı (₺)</label>
-                        <input type="number" id="asset-cost" step="0.01" placeholder="Aldığın Fiyat" required>
+                        <input type="number" id="asset-cost" step="0.01" placeholder="Birim Alış Fiyatın" required>
                     </div>
                     <div class="form-group">
                         <label>Anlık Güncel Fiyat (₺)</label>
-                        <input type="number" id="asset-price" step="0.01" placeholder="Şu Anki Fiyat" required>
+                        <input type="number" id="asset-price" step="0.01" placeholder="Canlı Fiyat" required>
                     </div>
                 </div>
                 <button type="submit" class="btn btn-secondary" style="margin-top: 10px;">Portföye Ekle</button>
@@ -326,6 +325,105 @@
     </div>
 
     <script>
+        // CANLI PİYASA VERİLERİNİ SAKLAMA NESNESİ
+        let liveRates = {
+            USD: 0,
+            EUR: 0,
+            ALTIN: 0,
+            GUMUS: 0,
+            BTC: 0
+        };
+
+        // ARKA PLANDA API'DEN CANLI VERİ ÇEKME FONKSİYONU
+        async function fetchLiveMarketData() {
+            try {
+                // 1. Dolar ve Euro Kurlarını Çek (Open Exchange Rates API)
+                const fxRes = await fetch('https://open.er-api.com/v6/latest/USD');
+                const fxData = await fxRes.json();
+                
+                if (fxData && fxData.rates) {
+                    liveRates.USD = fxData.rates.TRY;
+                    liveRates.EUR = (1 / fxData.rates.EUR) * fxData.rates.TRY;
+                }
+
+                // 2. Canlı Ons Altın & Gümüş Çekip Gram Altın/Gümüş (TL) Hesaplama
+                const goldRes = await fetch('https://api.gold-api.com/price/XAU');
+                const goldData = await goldRes.json();
+                if (goldData && goldData.price) {
+                    // Gram Altın (TL) = (Ons Altın USD / 31.1035) * Dolar Kuru
+                    liveRates.ALTIN = (goldData.price / 31.1035) * liveRates.USD;
+                }
+
+                const silverRes = await fetch('https://api.gold-api.com/price/XAG');
+                const silverData = await silverRes.json();
+                if (silverData && silverData.price) {
+                    liveRates.GUMUS = (silverData.price / 31.1035) * liveRates.USD;
+                }
+
+                // 3. Canlı Bitcoin Fiyatı (Binance API)
+                const btcRes = await fetch('https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT');
+                const btcData = await btcRes.json();
+                if (btcData && btcData.price) {
+                    liveRates.BTC = parseFloat(btcData.price);
+                }
+
+                updateMarketUI();
+            } catch (error) {
+                console.log("Canlı veri çekilirken hata oluştu, varsayılanlar kullanılıyor:", error);
+            }
+        }
+
+        function updateMarketUI() {
+            // Üst Kartları Güncelle
+            if(liveRates.USD > 0) document.getElementById('val-usd').innerText = '₺' + liveRates.USD.toFixed(2);
+            if(liveRates.EUR > 0) document.getElementById('val-eur').innerText = '₺' + liveRates.EUR.toFixed(2);
+            if(liveRates.ALTIN > 0) document.getElementById('val-altin').innerText = '₺' + liveRates.ALTIN.toFixed(2);
+            if(liveRates.GUMUS > 0) document.getElementById('val-gumus').innerText = '₺' + liveRates.GUMUS.toFixed(2);
+            if(liveRates.BTC > 0) document.getElementById('val-btc').innerText = '$' + liveRates.BTC.toLocaleString('en-US');
+
+            // Kayan Bantı Güncelle
+            if(liveRates.USD > 0) {
+                document.getElementById('tick-usd').innerText = '₺' + liveRates.USD.toFixed(2);
+                document.getElementById('tick-usd2').innerText = '₺' + liveRates.USD.toFixed(2);
+            }
+            if(liveRates.EUR > 0) {
+                document.getElementById('tick-eur').innerText = '₺' + liveRates.EUR.toFixed(2);
+                document.getElementById('tick-eur2').innerText = '₺' + liveRates.EUR.toFixed(2);
+            }
+            if(liveRates.ALTIN > 0) {
+                document.getElementById('tick-altin').innerText = '₺' + liveRates.ALTIN.toFixed(2);
+                document.getElementById('tick-altin2').innerText = '₺' + liveRates.ALTIN.toFixed(2);
+            }
+            if(liveRates.GUMUS > 0) document.getElementById('tick-gumus').innerText = '₺' + liveRates.GUMUS.toFixed(2);
+            if(liveRates.BTC > 0) document.getElementById('tick-btc').innerText = '$' + liveRates.BTC.toLocaleString('en-US');
+        }
+
+        // KULLANICI VARLIK KODU YAZDIĞINDA ANLIK FİYATIKUTUYA OTOMATİK DOLDURMA
+        function autoFillLivePrice() {
+            const type = document.getElementById('asset-type').value;
+            const code = document.getElementById('asset-code').value.toUpperCase().trim();
+            const priceInput = document.getElementById('asset-price');
+
+            if (code === 'USD' || code === 'DOLAR') {
+                priceInput.value = liveRates.USD.toFixed(2);
+            } else if (code === 'EUR' || code === 'EURO') {
+                priceInput.value = liveRates.EUR.toFixed(2);
+            } else if (code.includes('ALTIN') || code === 'GRAM ALTIN' || code === 'GA') {
+                priceInput.value = liveRates.ALTIN.toFixed(2);
+            } else if (code.includes('GÜMÜŞ') || code === 'GUMUS') {
+                priceInput.value = liveRates.GUMUS.toFixed(2);
+            } else if (code === 'BTC' || code === 'BITCOIN') {
+                // BTC fiyatını TL cinsinden gir
+                priceInput.value = (liveRates.BTC * liveRates.USD).toFixed(2);
+            }
+        }
+
+        // SAYFA YÜKLENDİĞİNDE BİLGİLERİ ÇEK
+        window.onload = function() {
+            fetchLiveMarketData();
+            setInterval(fetchLiveMarketData, 30000); // 30 saniyede bir canlı yenile
+        };
+
         function switchTab(tab) {
             document.getElementById('login-form').style.display = tab === 'login' ? 'block' : 'none';
             document.getElementById('register-form').style.display = tab === 'register' ? 'block' : 'none';

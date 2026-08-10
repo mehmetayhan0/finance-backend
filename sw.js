@@ -1,4 +1,3 @@
-// Finansım Portföy - Service Worker
 const CACHE_NAME = 'finansim-v1';
 
 self.addEventListener('install', (e) => {

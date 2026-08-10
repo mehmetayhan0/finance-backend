@@ -4,7 +4,7 @@ import os
 
 app = FastAPI()
 
-# Sunucudaki projenin tam ana klasör yolu (Linux / Render Uyumlu)
+# Sunucudaki projenin tam ana klasör yolu (Render / Linux Uyumlu)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # Ana Sayfa (index.html)
@@ -14,7 +14,7 @@ def read_root():
     with open(index_path, "r", encoding="utf-8") as f:
         return f.read()
 
-# Manifest Servisi
+# Manifest Servisi (PWABuilder İçin)
 @app.get("/manifest.json")
 def get_manifest():
     manifest_path = os.path.join(BASE_DIR, "manifest.json")
@@ -29,8 +29,16 @@ def get_sw():
 # APK İndirme Rotası
 @app.get("/download-apk")
 def download_apk():
-    # Olası tüm isim çeşitlemelerini tam yol ile kontrol et
-    possible_names = ["FinansAsistani.apk", "finansasistani.apk", "Finansım.apk", "finansim.apk"]
+    # GitHub ve sunucudaki olası tüm büyük/küçük harf ve Türkçe karakter çeşitlemeleri
+    possible_names = [
+        "FinansAsistani.apk",
+        "Finansasistani.apk",
+        "FinansAsistanı.apk",
+        "finansAsistanı.apk",
+        "finansasistani.apk",
+        "Finansım.apk",
+        "finansim.apk"
+    ]
     
     for name in possible_names:
         file_path = os.path.join(BASE_DIR, name)
@@ -41,7 +49,7 @@ def download_apk():
                 media_type="application/vnd.android.package-archive"
             )
             
-    # Eğer dosya halen bulunamazsa teşhis için sunucudaki mevcut dosyaları listeler
+    # Eğer hiçbir isimle eşleşme sağlanamazsa sunucudaki mevcut dosyaları listeler
     present_files = os.listdir(BASE_DIR)
     return {
         "status": "error",

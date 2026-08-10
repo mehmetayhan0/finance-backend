@@ -21,14 +21,12 @@ app.add_middleware(
 SECRET_KEY = "finans_gizli_anahtar_degistirin"
 ALGORITHM = "HS256"
 
-# Güvenli Şifre Hashleme Fonksiyonu (Dış kütüphane bağımlılığını kaldırır)
 def hash_password(password: str) -> str:
     return hashlib.pbkdf2_hmac('sha256', password.encode('utf-8'), b'static_salt_finans', 100000).hex()
 
 def verify_password(password: str, hashed: str) -> bool:
     return hash_password(password) == hashed
 
-# Veritabanı Yolunu Kalıcı Hale Getirme
 DB_PATH = "/opt/render/project/src/finans.db" if os.path.exists("/opt/render/project/src") else "finans.db"
 
 def init_db():
@@ -68,6 +66,30 @@ class Asset(BaseModel):
     symbol: str
     amount: float
     buy_price: float = 0.0
+
+# Akıllı Sembol ve Fiyat Dönüştürücü
+def resolve_symbol_and_price(symbol_input: str):
+    clean = symbol_input.strip().upper()
+    
+    # Altın Türleri (Gram Altın GAUTRY=X baz alınarak katsayı ile hesaplanır)
+    if clean in ["GRAM ALTIN", "ALTIN", "GRAM", "GAUTRY=X"]:
+        return "GAUTRY=X", 1.0, "GRAM ALTIN"
+    elif "ÇEYREK" in clean or "CEYREK" in clean:
+        return "GAUTRY=X", 1.63, "ÇEYREK ALTIN"
+    elif "YARIM" in clean:
+        return "GAUTRY=X", 3.26, "YARIM ALTIN"
+    elif "TAM" in clean or "ZİYNET" in clean or "ZIYNET" in clean:
+        return "GAUTRY=X", 6.52, "TAM ALTIN"
+    elif clean in ["DOLAR", "USD"]:
+        return "USDTRY=X", 1.0, "USD/TRY"
+    elif clean in ["EURO", "EUR"]:
+        return "EURTRY=X", 1.0, "EUR/TRY"
+    
+    # Borsa İstanbul Hisseleri (Eğer .IS yoksa ve yabancı sembol değilse ekler)
+    if not clean.endswith(".IS") and not "=" in clean and len(clean) <= 6:
+        return f"{clean}.IS", 1.0, clean
+        
+    return clean, 1.0, clean
 
 @app.post("/register")
 def register(user: UserAuth):
@@ -118,14 +140,18 @@ def get_portfolio(token: str):
     
     result = []
     for item in items:
-        asset_id, symbol, amount, buy_price = item
-        current_price = buy_price
+        asset_id, raw_symbol, amount, buy_price = item
         
+        # Sembolü çöz ve katsayıyı al
+        yf_symbol, multiplier, display_name = resolve_symbol_and_price(raw_symbol)
+        
+        current_price = buy_price
         try:
-            ticker = yf.Ticker(symbol)
-            price = ticker.fast_info.last_price
-            if price:
-                current_price = round(price, 2)
+            ticker = yf.Ticker(yf_symbol)
+            live_price = ticker.fast_info.last_price
+            if live_price:
+                # Katsayı ile çarparak (örn: gram fiyatı * 1.63 = çeyrek altın fiyatı) hesaplar
+                current_price = round(live_price * multiplier, 2)
         except:
             pass
             
@@ -136,7 +162,7 @@ def get_portfolio(token: str):
 
         result.append({
             "id": asset_id,
-            "symbol": symbol,
+            "symbol": display_name,
             "amount": amount,
             "buy_price": buy_price,
             "current_price": current_price,
@@ -153,7 +179,7 @@ def add_asset(asset: Asset, token: str):
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute("INSERT INTO portfolio (user_id, symbol, amount, buy_price) VALUES (?, ?, ?, ?)",
-                   (user_id, asset.symbol.upper(), asset.amount, asset.buy_price))
+                   (user_id, asset.symbol.strip(), asset.amount, asset.buy_price))
     conn.commit()
     conn.close()
     return {"message": "Varlık eklendi!"}

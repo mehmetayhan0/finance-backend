@@ -5,141 +5,175 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mehmet'in Finans Asistanı</title>
     
-    <!-- PWA Manifest & Tema -->
+    <!-- PWA Manifest Tanımlaması -->
     <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#1a1a2e">
-    <link rel="apple-touch-icon" href="/icon.png">
+    <meta name="theme-color" content="#0f172a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Finansım">
     
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
         }
 
         body {
             background-color: #0f172a;
             color: #f8fafc;
-            display: flex;
-            justify-content: center;
-            align-items: center;
             min-height: 100vh;
-            padding: 20px;
+            display: flex;
+            flex-direction: column;
         }
 
-        .container {
+        /* Üst Menü / Navbar */
+        header {
             background-color: #1e293b;
-            padding: 40px;
-            border-radius: 16px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
-            text-align: center;
-            max-width: 480px;
-            width: 100%;
-            border: 1px solid #334155;
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #334155;
         }
 
-        .logo {
-            font-size: 48px;
-            margin-bottom: 16px;
-        }
-
-        h1 {
-            font-size: 24px;
-            margin-bottom: 12px;
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 700;
+            font-size: 18px;
             color: #38bdf8;
         }
 
-        p {
-            color: #94a3b8;
-            font-size: 15px;
-            line-height: 1.6;
-            margin-bottom: 28px;
-        }
-
-        .btn-download {
+        .install-btn {
             background: linear-gradient(135deg, #0284c7, #2563eb);
             color: #ffffff;
             border: none;
-            padding: 14px 28px;
-            font-size: 16px;
+            padding: 10px 18px;
+            font-size: 14px;
             font-weight: 600;
-            border-radius: 10px;
+            border-radius: 8px;
             cursor: pointer;
             transition: all 0.2s ease;
-            text-decoration: none;
-            display: inline-flex;
+            display: flex;
             align-items: center;
-            justify-content: center;
-            gap: 10px;
+            gap: 8px;
+        }
+
+        .install-btn:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        /* Ana Web İçeriği (Webden Kullanım Alanı) */
+        main {
+            flex: 1;
+            padding: 24px;
+            max-width: 800px;
+            margin: 0 auto;
             width: 100%;
         }
 
-        .btn-download:hover {
-            background: linear-gradient(135deg, #0369a1, #1d4ed8);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+        .card {
+            background-color: #1e293b;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid #334155;
         }
 
-        .btn-download:active {
-            transform: translateY(0);
+        .card h2 {
+            font-size: 16px;
+            color: #94a3b8;
+            margin-bottom: 8px;
         }
 
-        .info-note {
-            margin-top: 16px;
-            font-size: 12px;
-            color: #64748b;
+        .card .amount {
+            font-size: 28px;
+            font-weight: 700;
+            color: #f8fafc;
+        }
+
+        .status-banner {
+            background-color: rgba(56, 189, 248, 0.1);
+            border: 1px solid #38bdf8;
+            color: #38bdf8;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            text-align: center;
         }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <div class="logo">📊</div>
-        <h1>Mehmet'in Finans Asistanı</h1>
-        <p>Gelir ve giderlerinizi kolayca takip edin, finansal analizlerinizi tek bir yerden yönetin.</p>
-        
-        <button id="downloadBtn" class="btn-download" onclick="triggerDownload()">
-            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
-            </svg>
-            Uygulamayı İndir
+    <header>
+        <div class="brand">
+            <span>📊</span> Mehmet'in Finans Asistanı
+        </div>
+        <!-- Uygulamayı İndir / Yükle Butonu -->
+        <button id="pwaInstallBtn" class="install-btn" onclick="installPWA()">
+            📲 Uygulamayı Yükle
         </button>
+    </header>
 
-        <p class="info-note">Güvenli indirme linki. Herhangi bir kurulum gerektirmeden hızlıca başlatın.</p>
-    </div>
+    <main>
+        <div id="webNotice" class="status-banner">
+            🌐 Şu an web sürümündesiniz. İsterseniz yukarıdaki **"Uygulamayı Yükle"** butonundan cihazınıza yükleyebilirsiniz.
+        </div>
+
+        <div class="card">
+            <h2>Toplam Varlık</h2>
+            <div class="amount">₺0,00</div>
+        </div>
+
+        <div class="card">
+            <h2>Aylık Gelir / Gider Özeti</h2>
+            <p style="color: #94a3b8; font-size: 14px; margin-top: 8px;">Finansal verileriniz yükleniyor...</p>
+        </div>
+    </main>
 
     <script>
         let deferredPrompt = null;
+        const installBtn = document.getElementById('pwaInstallBtn');
 
-        // Tarayıcı PWA yükleme olayı tetiklendiğinde yakala
+        // Service Worker Kaydı (PWA için Zorunlu)
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js').catch(err => console.log('SW Hata:', err));
+            });
+        }
+
+        // Tarayıcı yükleme imkanı sunduğunda olayı yakala
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             deferredPrompt = e;
+            installBtn.style.display = 'flex'; // Butonu görünür kıl
         });
 
-        function triggerDownload() {
-            // 1. Öncelik: Eğer tarayıcı PWA yüklemesine izin veriyorsa istemi göster
+        function installPWA() {
             if (deferredPrompt) {
+                // Eğer tarayıcı yüklemeye hazırsa pencereyi aç
                 deferredPrompt.prompt();
                 deferredPrompt.userChoice.then((choiceResult) => {
                     if (choiceResult.outcome === 'accepted') {
-                        console.log('Kullanıcı yüklemeyi kabul etti.');
+                        console.log('Kullanıcı uygulamayı yükledi.');
                     }
                     deferredPrompt = null;
                 });
             } else {
-                // 2. Öncelik (Düzeltme): Eğer istem yoksa kilitlenmek yerine doğrudan dosya indirmeye yönlendir
-                // URL sonuna timestamp ekleyerek tarayıcı engelini/cache sorununu aşıyoruz
-                const timestamp = new Date().getTime();
-                window.location.href = `/download?t=${timestamp}`;
+                // Eğer uygulama zaten yüklüyse veya tarayıcı desteği yoksa bilgilendir
+                alert("Uygulama zaten cihazınızda yüklü olabilir veya tarayıcınız otomatik yüklemeyi desteklemiyor.\n\nChrome/Safari kullanıyorsanız menüden 'Ana Ekrana Ekle' veya 'Uygulamayı Yükle' seçeneğini kullanabilirsiniz.");
             }
         }
 
-        // Uygulama yüklendiğinde tetiklenecek olay
+        // Uygulama yüklendikten sonra tetiklenir
         window.addEventListener('appinstalled', () => {
             deferredPrompt = null;
-            console.log('Uygulama başarıyla yüklendi.');
+            alert("Mehmet'in Finans Asistanı başarıyla cihazınıza yüklendi!");
         });
     </script>
 </body>

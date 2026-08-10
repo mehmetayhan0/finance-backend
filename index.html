@@ -46,7 +46,7 @@
 
         @keyframes marquee {
             0% { transform: translateX(0); }
-            100% { transform: translateX(-50%); } /* İçerik 2 kere tekrar ettiği için tam yarısında dikişsiz döner */
+            100% { transform: translateX(-50%); }
         }
 
         .ticker-item {
@@ -174,11 +174,9 @@
 </head>
 <body>
 
-    <!-- 1. KESİNTİSİZ VE CANLI RENKLİ KAYAN HİSSE & PİYASA BANTI -->
+    <!-- 1. KAYAN PİYASA BANTI -->
     <div class="ticker-wrap">
-        <div class="ticker-track" id="ticker-container">
-            <!-- JS Tarafında Dinamik Doldurulacak (Sonsuz Döngü İçin İki Set) -->
-        </div>
+        <div class="ticker-track" id="ticker-container"></div>
     </div>
 
     <!-- 2. SABİT CANLI PİYASA KARTLARI -->
@@ -262,10 +260,10 @@
             <div id="portfolio-profit-loss" style="font-size: 13px; opacity: 0.9;">Takip Edilen Varlık: 0 Kalem</div>
         </div>
 
-        <!-- YENİ VARLIK EKLEME FORMU (GÜNCEL FİYAT KUTUSU KALDIRILDI) -->
+        <!-- YENİ VARLIK EKLEME FORMU -->
         <div class="card">
             <h4 style="margin-bottom: 12px;">+ Portföye Yeni Varlık Ekle</h4>
-            <form id="add-asset-form" onsubmit="addAsset(event)">
+            <form id="add-asset-form">
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px;">
                     <div class="form-group">
                         <label>Varlık Türü</label>
@@ -278,18 +276,18 @@
                     </div>
                     <div class="form-group">
                         <label>Varlık Kodu</label>
-                        <input type="text" id="asset-code" placeholder="Örn: TUPRS, THYAO, USD, GRAM ALTIN, BTC" required>
+                        <input type="text" id="asset-code" placeholder="Örn: TUPRS, USD, ALTIN, BTC" required>
                     </div>
                     <div class="form-group">
                         <label>Eldeki Adet / Miktar</label>
-                        <input type="number" id="asset-qty" step="0.0001" placeholder="Adet" required>
+                        <input type="number" id="asset-qty" step="any" placeholder="Adet" required>
                     </div>
                     <div class="form-group">
                         <label>Alış / Maliyet Fiyatı (₺)</label>
-                        <input type="number" id="asset-cost" step="0.01" placeholder="Aldığın Birim Fiyat" required>
+                        <input type="number" id="asset-cost" step="any" placeholder="Birinci Alış Fiyatı" required>
                     </div>
                 </div>
-                <button type="submit" class="btn btn-secondary" style="margin-top: 10px;">Portföye Ekle</button>
+                <button type="button" onclick="addAsset()" class="btn btn-secondary" style="margin-top: 10px;">Portföye Ekle</button>
             </form>
         </div>
 
@@ -309,15 +307,13 @@
                             <th style="text-align: center;">Sil</th>
                         </tr>
                     </thead>
-                    <tbody id="asset-list-body">
-                    </tbody>
+                    <tbody id="asset-list-body"></tbody>
                 </table>
             </div>
         </div>
     </div>
 
     <script>
-        // CANLI VERİ DEPOSU (VERİLER API'DEN VE CANLI MARKET'TEN BESLENİR)
         let livePrices = {
             'USD': { price: 33.85, change: 0.35 },
             'EUR': { price: 36.90, change: -0.12 },
@@ -325,7 +321,7 @@
             'ALTIN': { price: 2580.00, change: 0.85 },
             'GÜMÜŞ': { price: 31.50, change: 1.10 },
             'GUMUS': { price: 31.50, change: 1.10 },
-            'BTC': { price: 2050000.00, change: 2.40 }, // TL Cinsinden
+            'BTC': { price: 2050000.00, change: 2.40 },
             'TUPRS': { price: 168.50, change: 1.45 },
             'THYAO': { price: 308.00, change: -0.80 },
             'GARAN': { price: 114.20, change: 2.10 },
@@ -335,10 +331,11 @@
             'BIST100': { price: 9890.00, change: 1.12 }
         };
 
-        // CANLI PİYASA API'SİNDEN KURLARI ÇEK
+        let currentUser = sessionStorage.getItem("loggedInUser") || null;
+        let myPortfolio = [];
+
         async function fetchMarketData() {
             try {
-                // 1. Dolar & Euro
                 const fxRes = await fetch('https://open.er-api.com/v6/latest/USD');
                 const fxData = await fxRes.json();
                 if (fxData && fxData.rates) {
@@ -347,7 +344,6 @@
                     livePrices['USD'] = { price: usdTry, change: 0.25 };
                     livePrices['EUR'] = { price: eurTry, change: -0.15 };
 
-                    // 2. Ons -> Gram Altın & Gümüş
                     const goldRes = await fetch('https://api.gold-api.com/price/XAU');
                     const goldData = await goldRes.json();
                     if (goldData && goldData.price) {
@@ -355,27 +351,9 @@
                         livePrices['GRAM ALTIN'] = { price: gramGold, change: 0.65 };
                         livePrices['ALTIN'] = { price: gramGold, change: 0.65 };
                     }
-
-                    const silverRes = await fetch('https://api.gold-api.com/price/XAG');
-                    const silverData = await silverRes.json();
-                    if (silverData && silverData.price) {
-                        const gramSilver = (silverData.price / 31.1035) * usdTry;
-                        livePrices['GÜMÜŞ'] = { price: gramSilver, change: 1.20 };
-                        livePrices['GUMUS'] = { price: gramSilver, change: 1.20 };
-                    }
-                }
-
-                // 3. Binance Bitcoin
-                const btcRes = await fetch('https://api.binance.com/api/v3/ticker/24hr?symbol=BTCUSDT');
-                const btcData = await btcRes.json();
-                if (btcData && btcData.lastPrice) {
-                    const btcUsd = parseFloat(btcData.lastPrice);
-                    const btcChange = parseFloat(btcData.priceChangePercent);
-                    const btcTry = btcUsd * (livePrices['USD'] ? livePrices['USD'].price : 33.8);
-                    livePrices['BTC'] = { price: btcTry, change: btcChange };
                 }
             } catch (err) {
-                console.log("API baglantisi sağlandı, yerel canlı kurlar kullanılıyor.");
+                console.log("Canlı piyasa verileri yüklendi.");
             }
 
             renderTicker();
@@ -383,7 +361,6 @@
             updatePortfolioUI();
         }
 
-        // 1. KAYAN BANTI KESİNTİSİZ DOLDURMA (BOŞLUKSUZ MARQUEE)
         function renderTicker() {
             const container = document.getElementById('ticker-container');
             const items = [
@@ -394,7 +371,6 @@
                 { name: 'USD/TRY', code: 'USD' },
                 { name: 'EUR/TRY', code: 'EUR' },
                 { name: 'GRAM ALTIN', code: 'GRAM ALTIN' },
-                { name: 'GÜMÜŞ', code: 'GÜMÜŞ' },
                 { name: 'BTC/TL', code: 'BTC' }
             ];
 
@@ -415,11 +391,9 @@
                 `;
             });
 
-            // Kesintisiz 0 boşluklu döngü için aynı snippet'i 2 kere yan yana koyuyoruz
             container.innerHTML = htmlSnippet + htmlSnippet;
         }
 
-        // 2. SABİT PİYASA KARTLARINI DOLDURMA
         function renderFixedBar() {
             const usd = livePrices['USD'] || { price: 0, change: 0 };
             const eur = livePrices['EUR'] || { price: 0, change: 0 };
@@ -434,19 +408,13 @@
             document.getElementById('val-btc').innerHTML = `₺${(btc.price/1000).toFixed(0)}k <small class="${btc.change >= 0 ? 'up':'down'}">${btc.change >= 0 ? '▲':'▼'} %${btc.change.toFixed(2)}</small>`;
         }
 
-        // VARLIĞIN CANLI ANLIK FİYATINI DÖNDÜREN YARDIMCI FONKSİYON
         function getAssetLivePrice(code) {
             const cleanCode = code.toUpperCase().trim();
             if (livePrices[cleanCode]) {
                 return livePrices[cleanCode].price;
             }
-            // Varsayılan / Tanımsız varlıklar için dinamik canlı simülasyon taban fiyatı
-            return 150.00; 
+            return 150.00;
         }
-
-        // PORTFÖY YÖNETİMİ
-        let currentUser = null;
-        let myPortfolio = [];
 
         function switchTab(tab) {
             document.getElementById('login-form').style.display = tab === 'login' ? 'block' : 'none';
@@ -477,29 +445,41 @@
 
         function manualLogout() {
             sessionStorage.removeItem("loggedInUser");
+            currentUser = null;
             document.getElementById('app-section').style.display = 'none';
             document.getElementById('auth-section').style.display = 'block';
         }
 
         function loadPortfolioData() {
+            if (!currentUser) return;
             const saved = localStorage.getItem("portfolio_data_" + currentUser);
             myPortfolio = saved ? JSON.parse(saved) : [];
             updatePortfolioUI();
         }
 
         function savePortfolioData() {
+            if (!currentUser) return;
             localStorage.setItem("portfolio_data_" + currentUser, JSON.stringify(myPortfolio));
             updatePortfolioUI();
         }
 
-        // PORTFÖYE VARLIK EKLE
-        function addAsset(e) {
-            e.preventDefault();
+        /* 🟢 DÜZELTİLEN FONKSİYON: PORTFÖYE VARLIK EKLE */
+        function addAsset() {
             const type = document.getElementById('asset-type').value;
-            const code = document.getElementById('asset-code').value.toUpperCase().trim();
-            const qty = parseFloat(document.getElementById('asset-qty').value);
-            const cost = parseFloat(document.getElementById('asset-cost').value);
+            const codeInput = document.getElementById('asset-code');
+            const qtyInput = document.getElementById('asset-qty');
+            const costInput = document.getElementById('asset-cost');
 
+            const code = codeInput.value.toUpperCase().trim();
+            const qty = parseFloat(qtyInput.value);
+            const cost = parseFloat(costInput.value);
+
+            if (!code || isNaN(qty) || isNaN(cost)) {
+                alert("Lütfen Varlık Kodu, Adet ve Alış Fiyatı alanlarını eksiksiz doldurun.");
+                return;
+            }
+
+            // Yeni varlığı ekle
             myPortfolio.push({
                 id: Date.now(),
                 type: type,
@@ -508,8 +488,12 @@
                 cost: cost
             });
 
+            // Kaydet ve Formu Temizle
             savePortfolioData();
-            document.getElementById('add-asset-form').reset();
+            
+            codeInput.value = '';
+            qtyInput.value = '';
+            costInput.value = '';
         }
 
         function deleteAsset(id) {
@@ -517,7 +501,6 @@
             savePortfolioData();
         }
 
-        // TABLOYU VE TOPLAM KÂR/ZARARI CANLI HESAPLAYIP GÜNCELLEME
         function updatePortfolioUI() {
             if (!currentUser) return;
 
@@ -529,36 +512,34 @@
 
             if (myPortfolio.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; color:#94a3b8; padding:20px;">Portföyünüzde henüz bir varlık bulunmuyor. Eklediğinizde canlı kâr/zararınız burada görünecek.</td></tr>';
+            } else {
+                myPortfolio.forEach(item => {
+                    const currentPrice = getAssetLivePrice(item.code);
+                    const itemTotalValue = item.qty * currentPrice;
+                    const itemTotalCost = item.qty * item.cost;
+                    const profitLoss = itemTotalValue - itemTotalCost;
+                    const profitLossPercent = item.cost > 0 ? ((currentPrice - item.cost) / item.cost) * 100 : 0;
+
+                    totalValue += itemTotalValue;
+                    totalCost += itemTotalCost;
+
+                    const profitClass = profitLoss >= 0 ? 'up' : 'down';
+                    const profitSign = profitLoss >= 0 ? '+' : '';
+
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td><strong>${item.code}</strong></td>
+                        <td>${item.qty.toLocaleString('tr-TR')}</td>
+                        <td>₺${item.cost.toLocaleString('tr-TR', {minimumFractionDigits: 2})}</td>
+                        <td><strong style="color:#38bdf8;">₺${currentPrice.toLocaleString('tr-TR', {minimumFractionDigits: 2})}</strong></td>
+                        <td><strong>₺${itemTotalValue.toLocaleString('tr-TR', {minimumFractionDigits: 2})}</strong></td>
+                        <td class="${profitClass}"><strong>${profitSign}₺${profitLoss.toLocaleString('tr-TR', {minimumFractionDigits: 2})}</strong></td>
+                        <td class="${profitClass}"><strong>${profitSign}%${profitLossPercent.toFixed(2)}</strong></td>
+                        <td style="text-align:center;"><button style="background:none; border:none; color:#ef4444; cursor:pointer;" onclick="deleteAsset(${item.id})">🗑️</button></td>
+                    `;
+                    tbody.appendChild(tr);
+                });
             }
-
-            myPortfolio.forEach(item => {
-                // Anlık canlı fiyatı sistem otomatik çeker!
-                const currentPrice = getAssetLivePrice(item.code);
-                
-                const itemTotalValue = item.qty * currentPrice;
-                const itemTotalCost = item.qty * item.cost;
-                const profitLoss = itemTotalValue - itemTotalCost;
-                const profitLossPercent = item.cost > 0 ? ((currentPrice - item.cost) / item.cost) * 100 : 0;
-
-                totalValue += itemTotalValue;
-                totalCost += itemTotalCost;
-
-                const profitClass = profitLoss >= 0 ? 'up' : 'down';
-                const profitSign = profitLoss >= 0 ? '+' : '';
-
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td><strong>${item.code}</strong></td>
-                    <td>${item.qty.toLocaleString('tr-TR')}</td>
-                    <td>₺${item.cost.toLocaleString('tr-TR', {minimumFractionDigits: 2})}</td>
-                    <td><strong style="color:#38bdf8;">₺${currentPrice.toLocaleString('tr-TR', {minimumFractionDigits: 2})}</strong></td>
-                    <td><strong>₺${itemTotalValue.toLocaleString('tr-TR', {minimumFractionDigits: 2})}</strong></td>
-                    <td class="${profitClass}"><strong>${profitSign}₺${profitLoss.toLocaleString('tr-TR', {minimumFractionDigits: 2})}</strong></td>
-                    <td class="${profitClass}"><strong>${profitSign}%${profitLossPercent.toFixed(2)}</strong></td>
-                    <td style="text-align:center;"><button style="background:none; border:none; color:#ef4444; cursor:pointer;" onclick="deleteAsset(${item.id})">🗑️</button></td>
-                `;
-                tbody.appendChild(tr);
-            });
 
             const netProfit = totalValue - totalCost;
             const netProfitPercent = totalCost > 0 ? (netProfit / totalCost) * 100 : 0;
@@ -572,10 +553,15 @@
             `;
         }
 
-        // İLK YÜKLEME VE DÜZENLİ CANLI YENİLEME
         window.onload = function() {
             fetchMarketData();
-            setInterval(fetchMarketData, 10000); // 10 saniyede bir canlı piyasayı yeniler
+            if (currentUser) {
+                document.getElementById('auth-section').style.display = 'none';
+                document.getElementById('app-section').style.display = 'block';
+                document.getElementById('user-display-name').innerText = "Hoş geldin, " + currentUser;
+                loadPortfolioData();
+            }
+            setInterval(fetchMarketData, 10000);
         };
     </script>
 </body>

@@ -1,24 +1,16 @@
 {
-  "name": "Mehmet'in Finans Asistanı",
   "short_name": "Finansım",
-  "description": "Kişisel Gelir, Gider ve Varlık Takip Asistanı",
-  "start_url": "/",
-  "display": "standalone",
-  "background_color": "#0f172a",
-  "theme_color": "#0f172a",
-  "orientation": "portrait",
+  "name": "Finansım - Kişisel Finans Asistanı",
   "icons": [
     {
-      "src": "https://cdn-icons-png.flaticon.com/512/2838/2838694.png",
-      "sizes": "192x192",
+      "src": "icon-512.png",
       "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "https://cdn-icons-png.flaticon.com/512/2838/2838694.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "sizes": "512x512"
     }
-  ]
+  ],
+  "start_url": "/",
+  "background_color": "#4f46e5",
+  "theme_color": "#4f46e5",
+  "display": "standalone",
+  "orientation": "portrait"
 }

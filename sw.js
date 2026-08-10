@@ -1,9 +1,9 @@
 const CACHE_NAME = 'finansim-v1';
 const urlsToCache = [
-  '/',
-  '/index.html',
-  '/manifest.json',
-  '/icon-512.png'
+  './',
+  './index.html',
+  './manifest.json',
+  './icon-512.png'
 ];
 
 self.addEventListener('install', (event) => {

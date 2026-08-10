@@ -66,8 +66,8 @@
     <div id="app-title" class="card" style="padding: 16px; text-align: center;">
         <h2 style="margin: 0;">💰 Finansım</h2>
         
-        <!-- MOBİL UYGULAMAYI İNDİR BUTONU (HER ZAMAN GÖRÜNÜR) -->
-        <button id="install-pwa-btn" class="install-btn" onclick="installApp()">
+        <!-- MOBİL UYGULAMAYI İNDİR BUTONU (BAŞLANGIÇTA GİZLİ, HAZIR OLUNCA DİREKT AÇILIR) -->
+        <button id="install-pwa-btn" class="install-btn hidden" onclick="installApp()">
             <span style="font-size: 1.2rem;">📲</span> Mobil Uygulamayı İndir
         </button>
     </div>
@@ -164,21 +164,29 @@
 <script>
     const API_URL = ""; 
 
-    // PWA YÜKLEME MANTIĞI (HER CİHAZA UYGUN GÜVENLİ YÜKLEME)
+    // DİREKT İNDİRME MANTIĞI (HİÇBİR MESAJ KUTUSU GÖSTERMEZ)
     let deferredPrompt;
+    const installBtn = document.getElementById('install-pwa-btn');
 
     window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault();
         deferredPrompt = e;
+        // Tarayıcı indirmeye tam hazır olduğunda butonu görünür yap
+        if (installBtn) {
+            installBtn.classList.remove('hidden');
+        }
     });
 
     async function installApp() {
-        if (deferredPrompt) {
-            deferredPrompt.prompt();
-            const { outcome } = await deferredPrompt.userChoice;
+        if (!deferredPrompt) return;
+        
+        // Doğrudan tarayıcının kendi yükleme istemini aç
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        
+        if (outcome === 'accepted') {
             deferredPrompt = null;
-        } else {
-            alert("Uygulamayı telefonunuza indirmek için:\n\n• Android / Chrome kullanıyorsanız: Sağ üstteki 3 noktaya basıp 'Ana ekrana ekle' veya 'Uygulamayı yükle' seçeneğine tıklayın.\n\n• iPhone / Safari kullanıyorsanız: Ekranın altındaki Paylaş (kutu üzerinde ok) simgesine basıp 'Ana Ekrana Ekle' seçeneğini seçin.");
+            if (installBtn) installBtn.classList.add('hidden');
         }
     }
 

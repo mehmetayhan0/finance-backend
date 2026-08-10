@@ -3,405 +3,144 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Finansım</title>
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#0f172a">
+    <title>Mehmet'in Finans Asistanı</title>
+    
+    <!-- PWA Manifest & Tema -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#1a1a2e">
+    <link rel="apple-touch-icon" href="/icon.png">
+    
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-        body { background-color: #0f172a; color: #f8fafc; display: flex; justify-content: center; min-height: 100vh; padding: 20px; }
-        .container { width: 100%; max-width: 480px; }
-        
-        .card { background: #1e293b; border-radius: 16px; padding: 24px; margin-bottom: 20px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3); border: 1px solid #334155; }
-        h1, h2, h3 { color: #f8fafc; margin-bottom: 16px; text-align: center; }
-        .subtitle { color: #94a3b8; font-size: 0.9rem; text-align: center; margin-bottom: 20px; }
-
-        input, select, button { width: 100%; padding: 12px 16px; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: #fff; margin-bottom: 12px; font-size: 1rem; outline: none; }
-        input:focus { border-color: #38bdf8; }
-        button { background: #38bdf8; color: #0f172a; font-weight: bold; cursor: pointer; border: none; transition: 0.2s; }
-        button:hover { background: #0284c7; color: #fff; }
-        button.secondary { background: transparent; color: #94a3b8; border: 1px solid #334155; }
-        button.danger { background: #ef4444; color: #fff; width: auto; padding: 6px 12px; font-size: 0.85rem; }
-        
-        /* MOBİL UYGULAMAYI İNDİR BUTON STİLİ */
-        button.install-btn { 
-            background: linear-gradient(135deg, #38bdf8 0%, #0284c7 100%); 
-            color: #ffffff; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            gap: 8px; 
-            font-size: 0.95rem;
-            padding: 14px;
-            box-shadow: 0 4px 12px rgba(56, 189, 248, 0.25);
-            margin-top: 12px;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
-        .auth-toggle { display: flex; justify-content: space-around; margin-top: 10px; font-size: 0.9rem; color: #38bdf8; cursor: pointer; text-decoration: underline; }
-        
-        .nav-tabs { display: flex; gap: 8px; margin-bottom: 16px; }
-        .nav-tabs button { margin-bottom: 0; background: #1e293b; color: #94a3b8; border: 1px solid #334155; }
-        .nav-tabs button.active { background: #38bdf8; color: #0f172a; }
+        body {
+            background-color: #0f172a;
+            color: #f8fafc;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
 
-        .summary-card { background: #0f172a; border: 1px solid #334155; border-radius: 12px; padding: 16px; margin-bottom: 16px; text-align: center; }
-        .summary-title { font-size: 0.8rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; }
-        .summary-value { font-size: 1.6rem; font-weight: bold; margin: 4px 0; color: #f8fafc; }
-        .summary-details { display: flex; justify-content: space-between; margin-top: 10px; padding-top: 10px; border-top: 1px solid #1e293b; font-size: 0.85rem; }
+        .container {
+            background-color: #1e293b;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            max-width: 480px;
+            width: 100%;
+            border: 1px solid #334155;
+        }
 
-        .portfolio-item { background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 12px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
-        .item-info { font-size: 0.95rem; }
-        .item-title { font-weight: bold; color: #f8fafc; }
-        .item-sub { font-size: 0.8rem; color: #94a3b8; }
-        .profit { color: #22c55e; font-weight: bold; }
-        .loss { color: #ef4444; font-weight: bold; }
+        .logo {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
 
-        .hidden { display: none !important; }
-        .msg { font-size: 0.85rem; text-align: center; margin-bottom: 10px; }
-        .msg.error { color: #ef4444; }
-        .msg.success { color: #22c55e; }
+        h1 {
+            font-size: 24px;
+            margin-bottom: 12px;
+            color: #38bdf8;
+        }
+
+        p {
+            color: #94a3b8;
+            font-size: 15px;
+            line-height: 1.6;
+            margin-bottom: 28px;
+        }
+
+        .btn-download {
+            background: linear-gradient(135deg, #0284c7, #2563eb);
+            color: #ffffff;
+            border: none;
+            padding: 14px 28px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .btn-download:hover {
+            background: linear-gradient(135deg, #0369a1, #1d4ed8);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+        }
+
+        .btn-download:active {
+            transform: translateY(0);
+        }
+
+        .info-note {
+            margin-top: 16px;
+            font-size: 12px;
+            color: #64748b;
+        }
     </style>
-    <script>
-        // HTTPS Zorunluluğu Kontrolü
-        if (location.protocol !== 'https:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
-            location.replace(`https:${location.href.substring(location.protocol.length)}`);
-        }
-
-        // PWA Kurulum Olayını Önceden Yakalama
-        window.deferredPrompt = null;
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            window.deferredPrompt = e;
-        });
-    </script>
 </head>
 <body>
 
-<div class="container">
-    <div id="app-title" class="card" style="padding: 16px; text-align: center;">
-        <h2 style="margin: 0;">💰 Finansım</h2>
+    <div class="container">
+        <div class="logo">📊</div>
+        <h1>Mehmet'in Finans Asistanı</h1>
+        <p>Gelir ve giderlerinizi kolayca takip edin, finansal analizlerinizi tek bir yerden yönetin.</p>
         
-        <!-- MOBİL UYGULAMAYI İNDİR BUTONU -->
-        <button id="install-pwa-btn" class="install-btn" onclick="installApp()">
-            <span style="font-size: 1.2rem;">📲</span> Mobil Uygulamayı İndir
+        <button id="downloadBtn" class="btn-download" onclick="triggerDownload()">
+            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+            </svg>
+            Uygulamayı İndir
         </button>
+
+        <p class="info-note">Güvenli indirme linki. Herhangi bir kurulum gerektirmeden hızlıca başlatın.</p>
     </div>
 
-    <!-- GİRİŞ EKRANI -->
-    <div id="login-card" class="card">
-        <h2>Giriş Yap</h2>
-        <div id="login-msg" class="msg"></div>
-        <input type="text" id="login-username" placeholder="Kullanıcı Adı veya E-Posta">
-        <input type="password" id="login-password" placeholder="Şifre">
-        <button onclick="login()">Giriş Yap</button>
-        <div class="auth-toggle">
-            <span onclick="showCard('register-card')">Hesap Oluştur</span>
-            <span onclick="showCard('forgot-card')">Şifremi Unuttum</span>
-        </div>
-    </div>
+    <script>
+        let deferredPrompt = null;
 
-    <!-- KAYIT EKRANI -->
-    <div id="register-card" class="card hidden">
-        <h2>Kayıt Ol</h2>
-        <div id="reg-msg" class="msg"></div>
-        <input type="text" id="reg-username" placeholder="Kullanıcı Adı">
-        <input type="email" id="reg-email" placeholder="E-Posta Adresi">
-        <input type="password" id="reg-password" placeholder="Şifre">
-        <button onclick="register()">Kayıt Ol</button>
-        <div class="auth-toggle">
-            <span onclick="showCard('login-card')">Zaten hesabın var mı? Giriş Yap</span>
-        </div>
-    </div>
-
-    <!-- ŞİFREMİ UNUTTUM EKRANI -->
-    <div id="forgot-card" class="card hidden">
-        <h2>Şifre Sıfırlama</h2>
-        <p class="subtitle">E-posta adresinizi girin, sıfırlama bağlantısını gönderelim.</p>
-        <div id="forgot-msg" class="msg"></div>
-        <input type="email" id="forgot-email" placeholder="E-Posta Adresiniz">
-        <button onclick="forgotPassword()">Sıfırlama Bağlantısı Gönder</button>
-        <button class="secondary" onclick="showCard('login-card')">Geri Dön</button>
-    </div>
-
-    <!-- ANA PANEL (PORTFÖY & PROFİL) -->
-    <div id="main-card" class="card hidden">
-        <div class="nav-tabs">
-            <button id="tab-btn-portfolio" class="active" onclick="switchTab('portfolio')">Portföyüm</button>
-            <button id="tab-btn-profile" onclick="switchTab('profile')">Profilim</button>
-        </div>
-
-        <!-- PORTFÖY SEKMESİ -->
-        <div id="tab-portfolio">
-            <div class="summary-card">
-                <div class="summary-title">TOPLAM PORTFÖY DEĞERİ</div>
-                <div id="total-portfolio-value" class="summary-value">₺0.00</div>
-                <div class="summary-details">
-                    <div>
-                        <span style="color: #94a3b8;">Maliyet: </span>
-                        <strong id="total-cost-value">₺0.00</strong>
-                    </div>
-                    <div>
-                        <span style="color: #94a3b8;">Kar/Zarar: </span>
-                        <strong id="total-profit-value">₺0.00 (%0)</strong>
-                    </div>
-                </div>
-            </div>
-
-            <div style="background: #0f172a; padding: 12px; border-radius: 8px; margin-bottom: 16px; border: 1px solid #334155;">
-                <h4 style="font-size: 0.85rem; color: #94a3b8;">VARLIK EKLE</h4>
-                <input type="text" id="asset-symbol" placeholder="Sembol (Örn: THYAO, Gram Altın, USD)" style="margin-top: 8px;">
-                <input type="number" id="asset-amount" step="any" placeholder="Adet / Miktar">
-                <input type="number" id="asset-price" step="any" placeholder="Maliyet / Alış Fiyatı (₺)">
-                <button onclick="addAsset()">Ekle</button>
-            </div>
-
-            <h3>Varlıklarım</h3>
-            <div id="portfolio-list">Yükleniyor...</div>
-            <button class="secondary" style="margin-top: 16px;" onclick="logout()">Çıkış Yap</button>
-        </div>
-
-        <!-- PROFİL SEKMESİ -->
-        <div id="tab-profile" class="hidden">
-            <div style="text-align: center; margin-bottom: 20px;">
-                <div style="font-size: 3rem; margin-bottom: 8px;">👤</div>
-                <h3 id="profile-username">-</h3>
-                <p id="profile-email" style="color: #94a3b8; font-size: 0.9rem;">-</p>
-            </div>
-            <div style="background: #0f172a; padding: 12px; border-radius: 8px; margin-bottom: 16px; border: 1px solid #334155;">
-                <p style="font-size: 0.85rem; color: #94a3b8;">E-posta Doğrulama Durumu:</p>
-                <p id="profile-status" style="font-weight: bold; margin-top: 4px;">-</p>
-            </div>
-            <button class="secondary" onclick="logout()">Çıkış Yap</button>
-        </div>
-    </div>
-</div>
-
-<script>
-    const API_URL = ""; 
-
-    // PWA İNDİRME FONKSİYONU
-    async function installApp() {
-        if (window.deferredPrompt) {
-            // Tarayıcının orijinal yükleme penceresini aç
-            window.deferredPrompt.prompt();
-            const { outcome } = await window.deferredPrompt.userChoice;
-            if (outcome === 'accepted') {
-                window.deferredPrompt = null;
-                const installBtn = document.getElementById('install-pwa-btn');
-                if (installBtn) installBtn.classList.add('hidden');
-            }
-        } else {
-            // Tarayıcı olayı yakalayamadıysa kullanıcıyı bilgilendir
-            alert("Uygulama zaten cihazınızda yüklü olabilir veya tarayıcınız otomatik yüklemeyi henüz hazır hale getirmedi. Chrome kullanıyorsanız sağ üstteki 3 noktadan 'Uygulamayı Yükle' seçeneğini deneyebilirsiniz.");
-        }
-    }
-
-    function showCard(cardId) {
-        document.querySelectorAll('.card').forEach(c => {
-            if(c.id !== 'app-title') c.classList.add('hidden');
-        });
-        document.getElementById(cardId).classList.remove('hidden');
-    }
-
-    function switchTab(tab) {
-        if(tab === 'portfolio') {
-            document.getElementById('tab-portfolio').classList.remove('hidden');
-            document.getElementById('tab-profile').classList.add('hidden');
-            document.getElementById('tab-btn-portfolio').classList.add('active');
-            document.getElementById('tab-btn-profile').classList.remove('active');
-        } else {
-            document.getElementById('tab-portfolio').classList.add('hidden');
-            document.getElementById('tab-profile').classList.remove('hidden');
-            document.getElementById('tab-btn-portfolio').classList.remove('active');
-            document.getElementById('tab-btn-profile').classList.add('active');
-            loadProfile();
-        }
-    }
-
-    function getToken() { return localStorage.getItem('token'); }
-    function setToken(token) { localStorage.setItem('token', token); }
-
-    async function register() {
-        const username = document.getElementById('reg-username').value;
-        const email = document.getElementById('reg-email').value;
-        const password = document.getElementById('reg-password').value;
-        const msg = document.getElementById('reg-msg');
-
-        try {
-            const res = await fetch(`${API_URL}/register`, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({username, email, password})
-            });
-            const data = await res.json();
-            if(!res.ok) throw new Error(data.detail || "Kayıt başarısız.");
-            msg.className = "msg success";
-            msg.innerText = "Kayıt başarılı! Giriş yapabilirsiniz.";
-            setTimeout(() => showCard('login-card'), 1500);
-        } catch(e) {
-            msg.className = "msg error";
-            msg.innerText = e.message;
-        }
-    }
-
-    async function login() {
-        const username = document.getElementById('login-username').value;
-        const password = document.getElementById('login-password').value;
-        const msg = document.getElementById('login-msg');
-
-        try {
-            const res = await fetch(`${API_URL}/login`, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({username, password})
-            });
-            const data = await res.json();
-            if(!res.ok) throw new Error(data.detail || "Giriş başarısız.");
-            setToken(data.access_token);
-            showCard('main-card');
-            loadPortfolio();
-        } catch(e) {
-            msg.className = "msg error";
-            msg.innerText = e.message;
-        }
-    }
-
-    async function forgotPassword() {
-        const email = document.getElementById('forgot-email').value;
-        const msg = document.getElementById('forgot-msg');
-
-        try {
-            const res = await fetch(`${API_URL}/forgot-password`, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({email})
-            });
-            const data = await res.json();
-            msg.className = "msg success";
-            msg.innerText = data.message;
-        } catch(e) {
-            msg.className = "msg error";
-            msg.innerText = "İşlem sırasında bir hata oluştu.";
-        }
-    }
-
-    async function loadPortfolio() {
-        const token = getToken();
-        if(!token) return showCard('login-card');
-
-        try {
-            const res = await fetch(`${API_URL}/portfolio?token=${token}`);
-            if(!res.ok) throw new Error("Oturum süresi dolmuş.");
-            const items = await res.json();
-            
-            const list = document.getElementById('portfolio-list');
-            if(items.length === 0) {
-                list.innerHTML = "<p style='text-align:center; color:#94a3b8; font-size:0.9rem;'>Henüz eklenmiş varlık yok.</p>";
-                document.getElementById('total-portfolio-value').innerText = "₺0.00";
-                document.getElementById('total-cost-value').innerText = "₺0.00";
-                document.getElementById('total-profit-value').innerText = "₺0.00 (%0)";
-                return;
-            }
-
-            let totalValue = 0;
-            let totalCost = 0;
-
-            items.forEach(item => {
-                totalValue += item.current_value;
-                totalCost += item.total_cost;
-            });
-
-            const totalProfit = totalValue - totalCost;
-            const totalProfitPercent = totalCost > 0 ? ((totalProfit / totalCost) * 100).toFixed(2) : "0.00";
-
-            document.getElementById('total-portfolio-value').innerText = `₺${totalValue.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-            document.getElementById('total-cost-value').innerText = `₺${totalCost.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-            
-            const profitEl = document.getElementById('total-profit-value');
-            const sign = totalProfit >= 0 ? '+' : '';
-            profitEl.innerText = `${sign}₺${totalProfit.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2})} (%${totalProfitPercent})`;
-            profitEl.style.color = totalProfit >= 0 ? '#22c55e' : '#ef4444';
-
-            list.innerHTML = items.map(item => `
-                <div class="portfolio-item">
-                    <div class="item-info">
-                        <div class="item-title">${item.symbol}</div>
-                        <div class="item-sub">${item.amount} Adet | Maliyet: ₺${item.buy_price.toLocaleString('tr-TR')}</div>
-                        <div class="item-sub">Güncel: ₺${item.current_price.toLocaleString('tr-TR')} | Değer: ₺${item.current_value.toLocaleString('tr-TR')}</div>
-                    </div>
-                    <div style="text-align: right;">
-                        <div class="${item.profit_loss >= 0 ? 'profit' : 'loss'}">
-                            ${item.profit_loss >= 0 ? '+' : ''}₺${item.profit_loss.toLocaleString('tr-TR')} (%${item.profit_loss_percent})
-                        </div>
-                        <button class="danger" style="margin-top: 6px;" onclick="deleteAsset(${item.id})">Sil</button>
-                    </div>
-                </div>
-            `).join('');
-        } catch(e) {
-            logout();
-        }
-    }
-
-    async function addAsset() {
-        const token = getToken();
-        const symbol = document.getElementById('asset-symbol').value;
-        const amount = parseFloat(document.getElementById('asset-amount').value);
-        const buy_price = parseFloat(document.getElementById('asset-price').value) || 0.0;
-
-        if(!symbol || !amount) return alert("Lütfen sembol ve miktar alanlarını doldurun.");
-
-        await fetch(`${API_URL}/portfolio/add?token=${token}`, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({symbol, amount, buy_price})
+        // Tarayıcı PWA yükleme olayı tetiklendiğinde yakala
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
         });
 
-        document.getElementById('asset-symbol').value = '';
-        document.getElementById('asset-amount').value = '';
-        document.getElementById('asset-price').value = '';
-        loadPortfolio();
-    }
-
-    async function deleteAsset(id) {
-        const token = getToken();
-        await fetch(`${API_URL}/portfolio/delete/${id}?token=${token}`, { method: 'DELETE' });
-        loadPortfolio();
-    }
-
-    async function loadProfile() {
-        const token = getToken();
-        try {
-            const res = await fetch(`${API_URL}/user/profile?token=${token}`);
-            const user = await res.json();
-            document.getElementById('profile-username').innerText = user.username;
-            document.getElementById('profile-email').innerText = user.email || "E-posta tanımlanmamış";
-            
-            const statusEl = document.getElementById('profile-status');
-            if(user.is_verified) {
-                statusEl.innerText = "✓ Doğrulanmış Hesap";
-                statusEl.style.color = "#22c55e";
+        function triggerDownload() {
+            // 1. Öncelik: Eğer tarayıcı PWA yüklemesine izin veriyorsa istemi göster
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        console.log('Kullanıcı yüklemeyi kabul etti.');
+                    }
+                    deferredPrompt = null;
+                });
             } else {
-                statusEl.innerText = "⏳ Onay Bekliyor / Pasif";
-                statusEl.style.color = "#f59e0b";
+                // 2. Öncelik (Düzeltme): Eğer istem yoksa kilitlenmek yerine doğrudan dosya indirmeye yönlendir
+                // URL sonuna timestamp ekleyerek tarayıcı engelini/cache sorununu aşıyoruz
+                const timestamp = new Date().getTime();
+                window.location.href = `/download?t=${timestamp}`;
             }
-        } catch(e) {}
-    }
+        }
 
-    function logout() {
-        localStorage.removeItem('token');
-        showCard('login-card');
-    }
-
-    if(getToken()) {
-        showCard('main-card');
-        loadPortfolio();
-    } else {
-        showCard('login-card');
-    }
-
-    // Service Worker Kaydı
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('sw.js').catch(() => {});
-    }
-</script>
-
+        // Uygulama yüklendiğinde tetiklenecek olay
+        window.addEventListener('appinstalled', () => {
+            deferredPrompt = null;
+            console.log('Uygulama başarıyla yüklendi.');
+        });
+    </script>
 </body>
 </html>

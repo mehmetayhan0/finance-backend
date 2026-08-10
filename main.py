@@ -4,30 +4,33 @@ import os
 
 app = FastAPI()
 
-# Ana Sayfa (index.html)
+# Ana Sayfa
 @app.get("/", response_class=HTMLResponse)
 def read_root():
     with open("index.html", "r", encoding="utf-8") as f:
         return f.read()
 
-# PWABuilder için Manifest Dosyası Servisi
+# Manifest ve Service Worker Servisleri
 @app.get("/manifest.json")
 def get_manifest():
     return FileResponse("manifest.json", media_type="application/json")
 
-# Service Worker Dosyası Servisi
 @app.get("/sw.js")
 def get_sw():
     return FileResponse("sw.js", media_type="application/javascript")
 
-# APK İndirme Rotası
+# APK İndirme Rotası (Güncellendi)
 @app.get("/download-apk")
 def download_apk():
-    apk_path = "FinansAsistani.apk"
-    if os.path.exists(apk_path):
-        return FileResponse(
-            path=apk_path, 
-            filename="FinansAsistani.apk", 
-            media_type="application/vnd.android.package-archive"
-        )
+    # Sunucudaki olası APK dosya adlarını kontrol et
+    possible_names = ["FinansAsistani.apk", "finansasistani.apk", "Finansım.apk"]
+    
+    for apk_name in possible_names:
+        if os.path.exists(apk_name):
+            return FileResponse(
+                path=apk_name, 
+                filename="FinansAsistani.apk", 
+                media_type="application/vnd.android.package-archive"
+            )
+            
     return {"message": "APK dosyası henüz sunucuya yüklenmedi."}

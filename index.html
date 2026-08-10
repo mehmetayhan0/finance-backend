@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Finansım</title>
-    <link rel="manifest" href="/manifest.json">
+    <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#0f172a">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
@@ -66,7 +66,7 @@
     <div id="app-title" class="card" style="padding: 16px; text-align: center;">
         <h2 style="margin: 0;">💰 Finansım</h2>
         
-        <!-- MOBİL UYGULAMAYI İNDİR BUTONU (BAŞLANGIÇTA GİZLİ, HAZIR OLUNCA DİREKT AÇILIR) -->
+        <!-- MOBİL UYGULAMAYI İNDİR BUTONU -->
         <button id="install-pwa-btn" class="install-btn hidden" onclick="installApp()">
             <span style="font-size: 1.2rem;">📲</span> Mobil Uygulamayı İndir
         </button>
@@ -164,14 +164,13 @@
 <script>
     const API_URL = ""; 
 
-    // DİREKT İNDİRME MANTIĞI (HİÇBİR MESAJ KUTUSU GÖSTERMEZ)
+    // DİREKT İNDİRME MANTIĞI
     let deferredPrompt;
     const installBtn = document.getElementById('install-pwa-btn');
 
     window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault();
         deferredPrompt = e;
-        // Tarayıcı indirmeye tam hazır olduğunda butonu görünür yap
         if (installBtn) {
             installBtn.classList.remove('hidden');
         }
@@ -179,11 +178,8 @@
 
     async function installApp() {
         if (!deferredPrompt) return;
-        
-        // Doğrudan tarayıcının kendi yükleme istemini aç
         deferredPrompt.prompt();
         const { outcome } = await deferredPrompt.userChoice;
-        
         if (outcome === 'accepted') {
             deferredPrompt = null;
             if (installBtn) installBtn.classList.add('hidden');
@@ -393,9 +389,9 @@
         showCard('login-card');
     }
 
-    // Service Worker Kaydı
+    // Service Worker Kaydı (Göreceli Yol)
     if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/sw.js').catch(() => {});
+        navigator.serviceWorker.register('sw.js').catch(() => {});
     }
 </script>
 

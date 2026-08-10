@@ -235,3 +235,10 @@ def delete_asset(asset_id: int, token: str):
 @app.get("/")
 def read_root():
     return FileResponse("index.html")
+    @app.get("/manifest.json")
+def get_manifest():
+    return FileResponse("manifest.json")
+
+@app.get("/sw.js")
+def get_sw():
+    return FileResponse("sw.js", media_type="application/javascript")

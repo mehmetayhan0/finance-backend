@@ -2,22 +2,33 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Finansım - Kişisel Finans & Portföy Asistanı</title>
+    
+    <!-- PWA Manifest & Renk Ayarları -->
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#4f46e5">
+
+    <!-- MOBİL TAM EKRAN (STANDALONE) META ETİKETLERİ -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Finansım">
+
     <style>
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
             font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
             background-color: #f3f4f6;
             color: #1f2937;
             padding-bottom: 40px;
+            user-select: none;
         }
 
         .container {
@@ -44,11 +55,11 @@
             margin-bottom: 20px;
         }
 
-        /* Başlıklar ve Butonlar */
         h2, h3, h4 {
             color: #111827;
         }
 
+        /* Butonlar */
         .btn {
             width: 100%;
             padding: 12px;
@@ -68,7 +79,7 @@
         .btn-danger { background-color: #ef4444; }
         .btn-danger:hover { background-color: #dc2626; }
 
-        /* Auth / Tab Stilleri */
+        /* Giriş ve Kayıt Sekmeleri */
         .tab-buttons {
             display: flex;
             margin-bottom: 20px;
@@ -338,7 +349,6 @@
             btns[1].classList.toggle('active', tab === 'register');
         }
 
-        // Kullanıcı Verileri
         let currentUser = null;
         let userTransactions = [];
 
@@ -369,7 +379,6 @@
             document.getElementById('auth-section').style.display = 'block';
         }
 
-        // Portföy Verilerini Yükle
         function loadUserData() {
             const savedData = localStorage.getItem("finansim_data_" + currentUser);
             userTransactions = savedData ? JSON.parse(savedData) : [];
@@ -381,7 +390,6 @@
             updateUI();
         }
 
-        // İşlem / Yatırım Ekleme
         function addTransaction(e) {
             e.preventDefault();
             const type = document.getElementById('tx-type').value;
@@ -398,7 +406,6 @@
 
             userTransactions.unshift(newTx);
             saveUserData();
-
             document.getElementById('transaction-form').reset();
         }
 
@@ -407,7 +414,6 @@
             saveUserData();
         }
 
-        // UI Arayüz Güncelleme & Hesaplamalar
         function updateUI() {
             let totalIncome = 0;
             let totalExpense = 0;

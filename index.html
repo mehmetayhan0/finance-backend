@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mehmet'in Finans Asistanı</title>
     
+    <!-- PWABuilder İçin Manifest Bağlantısı (Kritik Ekisik Buydu) -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#0f172a">
+    
     <style>
         * {
             margin: 0;
@@ -137,6 +141,13 @@
     </main>
 
     <script>
+        // Service Worker Kaydı (PWABuilder Tanıması İçin)
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js').catch(err => console.log('SW Hata:', err));
+            });
+        }
+
         // Kullanıcının Web'den mi yoksa Yüklü Uygulamadan mı girdiğini tespit et
         const isAppMode = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true || navigator.userAgent.includes('FinansApp');
 
@@ -156,7 +167,6 @@
             // TARAYICIDAN GİRİLDİYSE: Doğrudan APK İndir / Yükle Butonu Göster
             statusNotice.innerHTML = "🌐 **Web Sürümündesiniz.** Dilerseniz uygulamayı telefonunuza APK olarak indirebilirsiniz.";
             
-            // Timestamp ekleyerek tarayıcı indirme engelini aşıyoruz
             const downloadUrl = "/download-apk?t=" + new Date().getTime();
             
             buttonContainer.innerHTML = `
@@ -168,7 +178,6 @@
 
         // Uygulama içi güncelleme kontrolü
         function forceAppUpdate() {
-            // Sayfayı sunucudan en güncel haliyle yeniden yükler
             window.location.reload(true);
             alert("Uygulama en güncel sürüme yenilendi!");
         }
